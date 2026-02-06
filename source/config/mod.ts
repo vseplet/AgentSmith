@@ -1,17 +1,45 @@
-// Config keys enum
+// Config keys enum (KV keys)
 export const ConfigKey = {
   DEEPSEEK_API_KEY: "deepseek_api_key",
   DEEPSEEK_MODEL_NAME: "deepseek_model_name",
   TELEGRAM_BOT_API_KEY: "telegram_bot_api_key",
+  TELEGRAM_USER_ID: "telegram_user_id",
+  TELEGRAM_CODE: "telegram_code",
+  MOLTBOOK_API_KEY: "moltbook_api_key",
 } as const;
 
 export type ConfigKeyType = typeof ConfigKey[keyof typeof ConfigKey];
+
+// Mapping from KV keys to ENV variable names
+const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
+  [ConfigKey.DEEPSEEK_API_KEY]: "DEEPSEEK_API_KEY",
+  [ConfigKey.DEEPSEEK_MODEL_NAME]: "DEEPSEEK_MODEL_NAME",
+  [ConfigKey.TELEGRAM_BOT_API_KEY]: "TELEGRAM_BOT_API_KEY",
+  [ConfigKey.TELEGRAM_USER_ID]: "TELEGRAM_USER_ID",
+  [ConfigKey.TELEGRAM_CODE]: "TELEGRAM_CODE",
+  [ConfigKey.MOLTBOOK_API_KEY]: "MOLTBOOK_API_KEY",
+};
+
+// Default values
+const DEFAULTS: Partial<Record<ConfigKeyType, string>> = {
+  [ConfigKey.DEEPSEEK_MODEL_NAME]: "deepseek-chat",
+};
+
+// Get value from environment variable
+function getEnvValue(key: ConfigKeyType): string | null {
+  const envKey = ENV_KEY_MAP[key];
+  const value = Deno.env.get(envKey);
+  return value && value.trim() !== "" ? value : null;
+}
 
 // Config types
 export interface Config {
   [ConfigKey.DEEPSEEK_API_KEY]: string | null;
   [ConfigKey.DEEPSEEK_MODEL_NAME]: string | null;
   [ConfigKey.TELEGRAM_BOT_API_KEY]: string | null;
+  [ConfigKey.TELEGRAM_USER_ID]: string | null;
+  [ConfigKey.TELEGRAM_CODE]: string | null;
+  [ConfigKey.MOLTBOOK_API_KEY]: string | null;
 }
 
 // KV prefix for config storage
@@ -27,13 +55,33 @@ async function getKv(): Promise<Deno.Kv> {
   return kv;
 }
 
-// Generic config functions
-export async function getConfigValue(
-  key: ConfigKeyType,
-): Promise<string | null> {
+// Get value directly from KV (for testing)
+export async function getKvValue(key: ConfigKeyType): Promise<string | null> {
   const store = await getKv();
   const result = await store.get<string>([...KV_PREFIX, key]);
   return result.value;
+}
+
+// Generic config functions
+// Priority: ENV -> KV -> DEFAULTS
+export async function getConfigValue(
+  key: ConfigKeyType,
+): Promise<string | null> {
+  // First, check environment variable
+  const envValue = getEnvValue(key);
+  if (envValue !== null) {
+    return envValue;
+  }
+
+  // Then, check KV storage
+  const store = await getKv();
+  const result = await store.get<string>([...KV_PREFIX, key]);
+  if (result.value !== null) {
+    return result.value;
+  }
+
+  // Fallback to defaults
+  return DEFAULTS[key] ?? null;
 }
 
 export async function setConfigValue(
@@ -50,16 +98,29 @@ export async function deleteConfigValue(key: ConfigKeyType): Promise<void> {
 }
 
 export async function getAllConfig(): Promise<Config> {
-  const [deepseekKey, deepseekModel, telegramKey] = await Promise.all([
+  const [
+    deepseekKey,
+    deepseekModel,
+    telegramKey,
+    telegramUserId,
+    telegramCode,
+    moltbookKey,
+  ] = await Promise.all([
     getConfigValue(ConfigKey.DEEPSEEK_API_KEY),
     getConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME),
     getConfigValue(ConfigKey.TELEGRAM_BOT_API_KEY),
+    getConfigValue(ConfigKey.TELEGRAM_USER_ID),
+    getConfigValue(ConfigKey.TELEGRAM_CODE),
+    getConfigValue(ConfigKey.MOLTBOOK_API_KEY),
   ]);
 
   return {
     [ConfigKey.DEEPSEEK_API_KEY]: deepseekKey,
     [ConfigKey.DEEPSEEK_MODEL_NAME]: deepseekModel,
     [ConfigKey.TELEGRAM_BOT_API_KEY]: telegramKey,
+    [ConfigKey.TELEGRAM_USER_ID]: telegramUserId,
+    [ConfigKey.TELEGRAM_CODE]: telegramCode,
+    [ConfigKey.MOLTBOOK_API_KEY]: moltbookKey,
   };
 }
 
@@ -88,6 +149,33 @@ export async function getTelegramBotApiKey(): Promise<string | null> {
 
 export async function setTelegramBotApiKey(apiKey: string): Promise<void> {
   await setConfigValue(ConfigKey.TELEGRAM_BOT_API_KEY, apiKey);
+}
+
+// Telegram User ID helpers
+export async function getTelegramUserId(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.TELEGRAM_USER_ID);
+}
+
+export async function setTelegramUserId(userId: string): Promise<void> {
+  await setConfigValue(ConfigKey.TELEGRAM_USER_ID, userId);
+}
+
+// Telegram Code helpers
+export async function getTelegramCode(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.TELEGRAM_CODE);
+}
+
+export async function setTelegramCode(code: string): Promise<void> {
+  await setConfigValue(ConfigKey.TELEGRAM_CODE, code);
+}
+
+// Moltbook API key helpers
+export async function getMoltbookApiKey(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.MOLTBOOK_API_KEY);
+}
+
+export async function setMoltbookApiKey(apiKey: string): Promise<void> {
+  await setConfigValue(ConfigKey.MOLTBOOK_API_KEY, apiKey);
 }
 
 // Close KV connection (for cleanup)

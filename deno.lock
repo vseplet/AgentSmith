@@ -2,27 +2,19 @@
   "version": "5",
   "specifiers": {
     "jsr:@hono/hono@4.6.15": "4.6.15",
-    "jsr:@hono/hono@^4.11.7": "4.11.7",
     "jsr:@hono/hono@^4.6.0": "4.11.7",
-    "jsr:@nhttp/nhttp@^2.0.2": "2.0.3",
-    "jsr:@nhttp/zod@2.0.2": "2.0.2",
     "jsr:@std/assert@0.224": "0.224.0",
-    "jsr:@std/assert@1": "1.0.18",
     "jsr:@std/async@0.224.0": "0.224.0",
     "jsr:@std/fmt@0.224.0": "0.224.0",
     "jsr:@std/internal@^1.0.10": "1.0.12",
-    "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@1.1.2": "1.1.2",
-    "jsr:@valibot/valibot@0.36.0": "0.36.0",
-    "jsr:@vseplet/fetchify@0.4": "0.4.0",
     "jsr:@vseplet/luminous@1.0.3": "1.0.3",
-    "jsr:@vseplet/luminous@^2.2.1": "2.2.1",
     "jsr:@vseplet/morph@1.1.0": "1.1.0",
-    "jsr:@vseplet/morph@^1.1.0": "1.1.0",
     "jsr:@vseplet/shibui@^1.7.1": "1.7.1",
-    "npm:ai@^6.0.71": "6.0.71_zod@3.23.8",
-    "npm:zod@3.23.8": "3.23.8",
-    "npm:zod@^4.3.6": "4.3.6"
+    "npm:@ai-sdk/deepseek@^2.0.17": "2.0.17_zod@3.25.76",
+    "npm:@ai-sdk/openai@^3.0.25": "3.0.25_zod@3.25.76",
+    "npm:ai@^6.0.71": "6.0.71_zod@3.25.76",
+    "npm:zod@^3.25.76": "3.25.76"
   },
   "jsr": {
     "@hono/hono@4.6.15": {
@@ -31,29 +23,13 @@
     "@hono/hono@4.11.7": {
       "integrity": "2a0dc00088fbef98b76f575e3c4ab3d2c770d5e6095be215ae05c2aef25b363a"
     },
-    "@nhttp/nhttp@2.0.3": {
-      "integrity": "cef4cba5a2182844bc6a922d2062d2279e691e8621c6d1997776766600889394"
-    },
-    "@nhttp/zod@2.0.2": {
-      "integrity": "56179ebb1402512e95a783773bdcc84f35414121ed445d6286719e81b580c8f1",
-      "dependencies": [
-        "jsr:@nhttp/nhttp",
-        "npm:zod@3.23.8"
-      ]
-    },
     "@std/assert@0.224.0": {
       "integrity": "8643233ec7aec38a940a8264a6e3eed9bfa44e7a71cc6b3c8874213ff401967f"
-    },
-    "@std/assert@1.0.18": {
-      "integrity": "270245e9c2c13b446286de475131dc688ca9abcd94fc5db41d43a219b34d1c78",
-      "dependencies": [
-        "jsr:@std/internal@^1.0.12"
-      ]
     },
     "@std/async@0.224.0": {
       "integrity": "b6da423eeafbd0003fe88d950e069368c6a156f8b5293b7adbd9c8903a8f8d66",
       "dependencies": [
-        "jsr:@std/assert@0.224"
+        "jsr:@std/assert"
       ]
     },
     "@std/fmt@0.224.0": {
@@ -65,28 +41,11 @@
     "@std/path@1.1.2": {
       "integrity": "c0b13b97dfe06546d5e16bf3966b1cadf92e1cc83e56ba5476ad8b498d9e3038",
       "dependencies": [
-        "jsr:@std/internal@^1.0.10"
-      ]
-    },
-    "@valibot/valibot@0.36.0": {
-      "integrity": "36139cd850af78a876b9d9abf904a8d48c559374ce64e5a5b309dfea460a16ed"
-    },
-    "@vseplet/fetchify@0.4.0": {
-      "integrity": "5ceda8c766c41a73749780f4503802767dfb1d569b31c3f1d42a662350f93c43",
-      "dependencies": [
-        "jsr:@nhttp/zod",
-        "jsr:@std/async",
-        "jsr:@valibot/valibot"
+        "jsr:@std/internal"
       ]
     },
     "@vseplet/luminous@1.0.3": {
       "integrity": "a1a9246332de564bd8ded326c7ac220790f3f320a6488da02ae878106287c003",
-      "dependencies": [
-        "jsr:@std/fmt"
-      ]
-    },
-    "@vseplet/luminous@2.2.1": {
-      "integrity": "68a470760cc90e6e9df94e13ff27478fd7e3cd49397578d5ba1e025397a2b07e",
       "dependencies": [
         "jsr:@std/fmt"
       ]
@@ -103,28 +62,44 @@
         "jsr:@hono/hono@^4.6.0",
         "jsr:@std/async",
         "jsr:@std/fmt",
-        "jsr:@vseplet/luminous@1.0.3",
-        "jsr:@vseplet/morph@1.1.0"
+        "jsr:@vseplet/luminous",
+        "jsr:@vseplet/morph"
       ]
     }
   },
   "npm": {
-    "@ai-sdk/gateway@3.0.34_zod@3.23.8": {
+    "@ai-sdk/deepseek@2.0.17_zod@3.25.76": {
+      "integrity": "sha512-rkZiasQ24UyOMiZd8Mb7R+OF3Yt90bRQyfyzIkrb0zKZj7kU2h2z2nu1CO6j0X8poE+SZhEEaHOBFhRcp6hKVg==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "zod"
+      ]
+    },
+    "@ai-sdk/gateway@3.0.34_zod@3.25.76": {
       "integrity": "sha512-ZS1dWai5DINQOv3bpNi3ua9+yt3jnRaux3CwEr/ai9qETp6T+2wcpZyw+0jUHo1He/Lznw//AQh4zhdwHnTWrg==",
       "dependencies": [
         "@ai-sdk/provider",
         "@ai-sdk/provider-utils",
         "@vercel/oidc",
-        "zod@3.23.8"
+        "zod"
       ]
     },
-    "@ai-sdk/provider-utils@4.0.13_zod@3.23.8": {
+    "@ai-sdk/openai@3.0.25_zod@3.25.76": {
+      "integrity": "sha512-DsaN46R98+D1W3lU3fKuPU3ofacboLaHlkAwxJPgJ8eup1AJHmPK1N1y10eJJbJcF6iby8Tf/vanoZxc9JPUfw==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "zod"
+      ]
+    },
+    "@ai-sdk/provider-utils@4.0.13_zod@3.25.76": {
       "integrity": "sha512-HHG72BN4d+OWTcq2NwTxOm/2qvk1duYsnhCDtsbYwn/h/4zeqURu1S0+Cn0nY2Ysq9a9HGKvrYuMn9bgFhR2Og==",
       "dependencies": [
         "@ai-sdk/provider",
         "@standard-schema/spec",
         "eventsource-parser",
-        "zod@3.23.8"
+        "zod"
       ]
     },
     "@ai-sdk/provider@3.0.7": {
@@ -142,14 +117,14 @@
     "@vercel/oidc@3.1.0": {
       "integrity": "sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w=="
     },
-    "ai@6.0.71_zod@3.23.8": {
+    "ai@6.0.71_zod@3.25.76": {
       "integrity": "sha512-33/Qq0BhEG+SabYeE7ZlLL3DCubUQo04C8E9UdEHqh2DJuGdtxMXG/TSMkO2uF+ZmlGJpD4UY5Wij9/qal298w==",
       "dependencies": [
         "@ai-sdk/gateway",
         "@ai-sdk/provider",
         "@ai-sdk/provider-utils",
         "@opentelemetry/api",
-        "zod@3.23.8"
+        "zod"
       ]
     },
     "eventsource-parser@3.0.6": {
@@ -158,11 +133,8 @@
     "json-schema@0.4.0": {
       "integrity": "sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA=="
     },
-    "zod@3.23.8": {
-      "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g=="
-    },
-    "zod@4.3.6": {
-      "integrity": "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg=="
+    "zod@3.25.76": {
+      "integrity": "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="
     }
   },
   "redirects": {
@@ -214,8 +186,10 @@
       "jsr:@vseplet/luminous@^2.2.1",
       "jsr:@vseplet/morph@^1.1.0",
       "jsr:@vseplet/shibui@^1.7.1",
+      "npm:@ai-sdk/deepseek@^2.0.17",
+      "npm:@ai-sdk/openai@^3.0.25",
       "npm:ai@^6.0.71",
-      "npm:zod@^4.3.6"
+      "npm:zod@^3.25.76"
     ]
   }
 }

@@ -1,12 +1,14 @@
 {
   "tasks": {
-    "dev": "deno run --watch --unstable-kv ./source/main.ts",
-    "test": "deno test --allow-read --allow-write --allow-net --unstable-kv",
+    "dev": "deno run --watch --env --allow-net --allow-env --allow-read --allow-write --allow-run --allow-import --unstable-kv ./source/main.ts",
+    "test": "deno test --env --allow-read --allow-write --allow-net --allow-env --unstable-kv",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "check": "deno check source/**/*.ts tests/**/*.ts"
+    "check": "deno check --allow-import source/**/*.ts tests/**/*.ts"
   },
   "imports": {
+    "@ai-sdk/deepseek": "npm:@ai-sdk/deepseek@^2.0.17",
+    "@ai-sdk/openai": "npm:@ai-sdk/openai@^3.0.25",
     "@vseplet/fetchify": "jsr:@vseplet/fetchify@^0.4.0",
     "@vseplet/luminous": "jsr:@vseplet/luminous@^2.2.1",
     "ai": "npm:ai@^6.0.71",
@@ -15,6 +17,22 @@
     "@std/assert": "jsr:@std/assert@1",
     "@vseplet/morph": "jsr:@vseplet/morph@^1.1.0",
     "@vseplet/shibui": "jsr:@vseplet/shibui@^1.7.1",
-    "zod": "npm:zod@^4.3.6"
+    "zod": "npm:zod@^3.25.76",
+    "#config": "./source/config/mod.ts",
+    "#tgbot": "./source/tgbot/mod.ts",
+    "#agent": "./source/agent/mod.ts",
+    "#deepseek": "./source/agent/deepseek.ts",
+    "#tools/uptime": "./source/agent/tools/uptime.ts",
+    "#tools/system": "./source/agent/tools/system.ts",
+    "#tools/ps": "./source/agent/tools/ps.ts",
+    "#tools/claude": "./source/agent/tools/claude.ts",
+    "#tools/websearch": "./source/agent/tools/websearch.ts",
+    "#tools/moltbook": "./source/agent/tools/moltbook.ts",
+    "#tools/logsearch": "./source/agent/tools/logsearch.ts",
+    "#tools/eval": "./source/agent/tools/eval.ts",
+    "#tools/glock17": "./source/agent/tools/glock17.ts",
+    "#tools/http-services": "./source/agent/tools/http-services.ts",
+    "#memory": "./source/agent/memory.ts",
+    "#logger": "./source/agent/logger.ts"
   }
 }
