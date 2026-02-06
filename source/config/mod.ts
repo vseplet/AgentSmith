@@ -1,19 +1,16 @@
-// Config keys enum (KV keys)
-export const ConfigKey = {
-  DEEPSEEK_API_KEY: "deepseek_api_key",
-  DEEPSEEK_MODEL_NAME: "deepseek_model_name",
-  TELEGRAM_BOT_API_KEY: "telegram_bot_api_key",
-  TELEGRAM_USER_ID: "telegram_user_id",
-  TELEGRAM_CODE: "telegram_code",
-  MOLTBOOK_API_KEY: "moltbook_api_key",
-} as const;
+import { ConfigKey } from "#types";
+import type { Config, ConfigKeyType } from "#types";
 
-export type ConfigKeyType = typeof ConfigKey[keyof typeof ConfigKey];
+export { ConfigKey };
+export type { Config, ConfigKeyType };
 
 // Mapping from KV keys to ENV variable names
 const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
+  [ConfigKey.LLM_PROVIDER]: "LLM_PROVIDER",
   [ConfigKey.DEEPSEEK_API_KEY]: "DEEPSEEK_API_KEY",
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "DEEPSEEK_MODEL_NAME",
+  [ConfigKey.LMSTUDIO_BASE_URL]: "LMSTUDIO_BASE_URL",
+  [ConfigKey.LMSTUDIO_MODEL_NAME]: "LMSTUDIO_MODEL_NAME",
   [ConfigKey.TELEGRAM_BOT_API_KEY]: "TELEGRAM_BOT_API_KEY",
   [ConfigKey.TELEGRAM_USER_ID]: "TELEGRAM_USER_ID",
   [ConfigKey.TELEGRAM_CODE]: "TELEGRAM_CODE",
@@ -22,7 +19,9 @@ const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
 
 // Default values
 const DEFAULTS: Partial<Record<ConfigKeyType, string>> = {
+  [ConfigKey.LLM_PROVIDER]: "deepseek",
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "deepseek-chat",
+  [ConfigKey.LMSTUDIO_BASE_URL]: "http://100.107.243.60:1234/v1",
 };
 
 // Get value from environment variable
@@ -30,16 +29,6 @@ function getEnvValue(key: ConfigKeyType): string | null {
   const envKey = ENV_KEY_MAP[key];
   const value = Deno.env.get(envKey);
   return value && value.trim() !== "" ? value : null;
-}
-
-// Config types
-export interface Config {
-  [ConfigKey.DEEPSEEK_API_KEY]: string | null;
-  [ConfigKey.DEEPSEEK_MODEL_NAME]: string | null;
-  [ConfigKey.TELEGRAM_BOT_API_KEY]: string | null;
-  [ConfigKey.TELEGRAM_USER_ID]: string | null;
-  [ConfigKey.TELEGRAM_CODE]: string | null;
-  [ConfigKey.MOLTBOOK_API_KEY]: string | null;
 }
 
 // KV prefix for config storage
@@ -99,15 +88,21 @@ export async function deleteConfigValue(key: ConfigKeyType): Promise<void> {
 
 export async function getAllConfig(): Promise<Config> {
   const [
+    llmProvider,
     deepseekKey,
     deepseekModel,
+    lmstudioBaseUrl,
+    lmstudioModel,
     telegramKey,
     telegramUserId,
     telegramCode,
     moltbookKey,
   ] = await Promise.all([
+    getConfigValue(ConfigKey.LLM_PROVIDER),
     getConfigValue(ConfigKey.DEEPSEEK_API_KEY),
     getConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME),
+    getConfigValue(ConfigKey.LMSTUDIO_BASE_URL),
+    getConfigValue(ConfigKey.LMSTUDIO_MODEL_NAME),
     getConfigValue(ConfigKey.TELEGRAM_BOT_API_KEY),
     getConfigValue(ConfigKey.TELEGRAM_USER_ID),
     getConfigValue(ConfigKey.TELEGRAM_CODE),
@@ -115,13 +110,25 @@ export async function getAllConfig(): Promise<Config> {
   ]);
 
   return {
+    [ConfigKey.LLM_PROVIDER]: llmProvider,
     [ConfigKey.DEEPSEEK_API_KEY]: deepseekKey,
     [ConfigKey.DEEPSEEK_MODEL_NAME]: deepseekModel,
+    [ConfigKey.LMSTUDIO_BASE_URL]: lmstudioBaseUrl,
+    [ConfigKey.LMSTUDIO_MODEL_NAME]: lmstudioModel,
     [ConfigKey.TELEGRAM_BOT_API_KEY]: telegramKey,
     [ConfigKey.TELEGRAM_USER_ID]: telegramUserId,
     [ConfigKey.TELEGRAM_CODE]: telegramCode,
     [ConfigKey.MOLTBOOK_API_KEY]: moltbookKey,
   };
+}
+
+// LLM Provider helpers
+export async function getLLMProvider(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.LLM_PROVIDER);
+}
+
+export async function setLLMProvider(provider: string): Promise<void> {
+  await setConfigValue(ConfigKey.LLM_PROVIDER, provider);
 }
 
 // DeepSeek API key helpers
@@ -140,6 +147,23 @@ export async function getDeepSeekModelName(): Promise<string | null> {
 
 export async function setDeepSeekModelName(modelName: string): Promise<void> {
   await setConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME, modelName);
+}
+
+// LMStudio helpers
+export async function getLMStudioBaseURL(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.LMSTUDIO_BASE_URL);
+}
+
+export async function setLMStudioBaseURL(url: string): Promise<void> {
+  await setConfigValue(ConfigKey.LMSTUDIO_BASE_URL, url);
+}
+
+export async function getLMStudioModelName(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.LMSTUDIO_MODEL_NAME);
+}
+
+export async function setLMStudioModelName(modelName: string): Promise<void> {
+  await setConfigValue(ConfigKey.LMSTUDIO_MODEL_NAME, modelName);
 }
 
 // Telegram Bot API key helpers

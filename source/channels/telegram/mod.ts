@@ -9,6 +9,8 @@ import {
 import { sendTelegramMessage } from "#agent";
 import { clearMemory, getMemory } from "#memory";
 import { replyOptions } from "./helpers.ts";
+import { getAllContacts, getAllGroups, upsertContact, upsertGroup } from "./contacts.ts";
+import type { ReactionEmoji } from "#types";
 
 let bot: Bot | null = null;
 
@@ -35,6 +37,16 @@ export async function sendReply(
   return result.message_id;
 }
 
+export async function sendMessage(
+  chatId: number,
+  text: string,
+): Promise<number> {
+  if (!bot) return 0;
+
+  const result = await bot.api.sendMessage(chatId, truncateMessage(text));
+  return result.message_id;
+}
+
 export async function editMessage(
   chatId: number,
   messageId: number,
@@ -48,18 +60,6 @@ export async function editMessage(
     // Ignore edit errors (message not modified, etc.)
   }
 }
-
-type ReactionEmoji =
-  | "👍"
-  | "👎"
-  | "❤"
-  | "🔥"
-  | "🎉"
-  | "😁"
-  | "😢"
-  | "🤔"
-  | "👏"
-  | "🙏";
 
 export async function setReaction(
   chatId: number,
@@ -195,7 +195,77 @@ export async function startBot(): Promise<void> {
     ctx.reply(output, replyOptions(ctx));
   });
 
+  bot.command("contacts", async (ctx) => {
+    const ownerId = await getTelegramUserId();
+    const userId = ctx.from?.id.toString();
+
+    if (!ownerId || userId !== ownerId) {
+      ctx.reply("Access denied.", replyOptions(ctx));
+      return;
+    }
+
+    const contacts = await getAllContacts();
+    if (contacts.length === 0) {
+      ctx.reply("No contacts yet.", replyOptions(ctx));
+      return;
+    }
+
+    const lines = contacts.map((c) => {
+      const name = c.username ? `@${c.username}` : `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim();
+      return `• ${name} (${c.id}) — ${c.messageCount} msgs`;
+    });
+
+    ctx.reply(`=== Contacts (${contacts.length}) ===\n${lines.join("\n")}`, replyOptions(ctx));
+  });
+
+  bot.command("groups", async (ctx) => {
+    const ownerId = await getTelegramUserId();
+    const userId = ctx.from?.id.toString();
+
+    if (!ownerId || userId !== ownerId) {
+      ctx.reply("Access denied.", replyOptions(ctx));
+      return;
+    }
+
+    const groups = await getAllGroups();
+    if (groups.length === 0) {
+      ctx.reply("No groups yet.", replyOptions(ctx));
+      return;
+    }
+
+    const lines = groups.map((g) => {
+      const name = g.username ? `@${g.username}` : g.title;
+      return `• ${name} (${g.type}) — ${g.messageCount} msgs`;
+    });
+
+    ctx.reply(`=== Groups (${groups.length}) ===\n${lines.join("\n")}`, replyOptions(ctx));
+  });
+
   bot.on("message:text", async (ctx) => {
+    // Save contact info
+    if (ctx.from) {
+      await upsertContact({
+        id: ctx.from.id,
+        username: ctx.from.username,
+        first_name: ctx.from.first_name,
+        last_name: ctx.from.last_name,
+        language_code: ctx.from.language_code,
+        is_premium: ctx.from.is_premium,
+      });
+    }
+
+    // Save group info if message is from a group
+    const chatType = ctx.chat.type;
+    if (chatType === "group" || chatType === "supergroup" || chatType === "channel") {
+      await upsertGroup({
+        id: ctx.chat.id,
+        title: "title" in ctx.chat ? ctx.chat.title : undefined,
+        type: chatType,
+        username: "username" in ctx.chat ? ctx.chat.username : undefined,
+      });
+    }
+
+    // Check owner access
     const ownerId = await getTelegramUserId();
     const userId = ctx.from?.id.toString();
 

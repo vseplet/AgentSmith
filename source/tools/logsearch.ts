@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 import { getLogDir, searchLogs } from "#logger";
 
 export const logSearchTool: Tool = {

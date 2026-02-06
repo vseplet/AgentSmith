@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 import { getMoltbookApiKey, setMoltbookApiKey } from "#config";
 
 const BASE_URL = "https://www.moltbook.com/api/v1";

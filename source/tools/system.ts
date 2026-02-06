@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 
 export const systemInfoTool: Tool = {
   name: "get_system_info",

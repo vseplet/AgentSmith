@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 
 async function fetchText(url: string): Promise<string> {
   const controller = new AbortController();

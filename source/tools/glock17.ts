@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 
 export const glock17Tool: Tool = {
   name: "glock17",

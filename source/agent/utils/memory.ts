@@ -1,16 +1,7 @@
+import type { Memory, MemoryMessage } from "#types";
+
 const MAX_MESSAGES = 20;
 const SUMMARY_THRESHOLD = 15;
-
-interface MemoryMessage {
-  role: "user" | "assistant";
-  content: string;
-  timestamp: number;
-}
-
-interface Memory {
-  messages: MemoryMessage[];
-  summary: string | null;
-}
 
 let kv: Deno.Kv | null = null;
 

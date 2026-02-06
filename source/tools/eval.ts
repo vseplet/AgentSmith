@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 
 export const evalTool: Tool = {
   name: "eval_code",

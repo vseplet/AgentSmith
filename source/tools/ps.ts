@@ -1,4 +1,4 @@
-import { Tool } from "#deepseek";
+import type { Tool } from "#types";
 
 export const psTool: Tool = {
   name: "list_processes",
