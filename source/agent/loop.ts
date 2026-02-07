@@ -5,25 +5,13 @@ import { complete, resolveProvider, summarize } from "#llm";
 import { buildContext } from "./context.ts";
 import { addToMemory, summarizeMemory } from "#memory";
 import { dump } from "#logger";
-import type { ProgressCallback, Tool } from "#types";
+import type { ChatResult, ProgressCallback, TokenStats } from "#types";
 
 // ============================================
 // Agent Loop
 // ============================================
 
 const MAX_STEPS = 10;
-
-interface TokenStats {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-  steps: number;
-}
-
-interface ChatResult {
-  text: string;
-  tokens: TokenStats;
-}
 
 function shortResult(result: unknown): string {
   const str = JSON.stringify(result);

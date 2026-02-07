@@ -2,14 +2,7 @@ import { buildSystemPrompt } from "./system-prompt.ts";
 import { TOOLS } from "./tools/mod.ts";
 import { getContextMessages, addToMemory } from "#memory";
 import { dump } from "#logger";
-import type { ToolPayload } from "#llm";
-import type { Message, Tool } from "#types";
-
-export interface AgentContext {
-  messages: Message[];
-  tools: Tool[];
-  toolsPayload: ToolPayload[];
-}
+import type { AgentContext, Message, Tool, ToolPayload } from "#types";
 
 function buildToolsPayload(tools: Tool[]): ToolPayload[] {
   return tools.map((t) => ({

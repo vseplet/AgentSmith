@@ -1,5 +1,5 @@
 import { getDeepSeekApiKey, getDeepSeekModelName } from "#config";
-import type { ProviderConfig } from "./mod.ts";
+import type { ProviderConfig } from "#types";
 
 export async function getProviderConfig(): Promise<ProviderConfig> {
   const apiKey = await getDeepSeekApiKey();

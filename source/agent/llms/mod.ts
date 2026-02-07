@@ -1,22 +1,10 @@
 import fetchify from "@vseplet/fetchify";
 import * as v from "@valibot/valibot";
 import { getLLMProvider } from "#config";
-import type { Message, ToolCall } from "#types";
+import type { CompletionResult, Message, ProviderConfig, ToolCall, ToolPayload } from "#types";
 
 import { getProviderConfig as getDeepSeekConfig } from "./deepseek.ts";
 import { getProviderConfig as getLMStudioConfig } from "./lmstudio.ts";
-
-// ============================================
-// Provider Config
-// ============================================
-
-export interface ProviderConfig {
-  name: string;
-  baseURL: string;
-  headers: Record<string, string>;
-  model: string;
-  rps: number;
-}
 
 const PROVIDERS: Record<string, () => Promise<ProviderConfig>> = {
   deepseek: getDeepSeekConfig,
@@ -89,33 +77,6 @@ async function parseResponse(
   }
   const json = await response.json();
   return v.parse(ChatResponseSchema, json);
-}
-
-// ============================================
-// Public API
-// ============================================
-
-export interface CompletionResult {
-  message: {
-    role: string;
-    content: string | null;
-    tool_calls?: ToolCall[];
-  };
-  finishReason: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-}
-
-export interface ToolPayload {
-  type: "function";
-  function: {
-    name: string;
-    description: string;
-    parameters: Record<string, unknown>;
-  };
 }
 
 export async function complete(

@@ -46,6 +46,59 @@ export interface ChatResponse {
 
 export type ProgressCallback = (status: string) => Promise<void>;
 
+export interface ProviderConfig {
+  name: string;
+  baseURL: string;
+  headers: Record<string, string>;
+  model: string;
+  rps: number;
+}
+
+export interface CompletionResult {
+  message: {
+    role: string;
+    content: string | null;
+    tool_calls?: ToolCall[];
+  };
+  finishReason: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+export interface ToolPayload {
+  type: "function";
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
+}
+
+// ============================================
+// Agent Types
+// ============================================
+
+export interface AgentContext {
+  messages: Message[];
+  tools: Tool[];
+  toolsPayload: ToolPayload[];
+}
+
+export interface TokenStats {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  steps: number;
+}
+
+export interface ChatResult {
+  text: string;
+  tokens: TokenStats;
+}
+
 // ============================================
 // Memory Types
 // ============================================
