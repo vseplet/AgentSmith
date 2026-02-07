@@ -2,16 +2,25 @@ const HOME = Deno.env.get("HOME") ?? ".";
 const SMITH_DIR = `${HOME}/.smith`;
 const DUMPS_DIR = `${SMITH_DIR}/dumps`;
 
+const SMITH_DIRS = [
+  DUMPS_DIR,
+  `${SMITH_DIR}/skills`,
+  `${SMITH_DIR}/tools`,
+  `${SMITH_DIR}/profiles`,
+];
+
 let initialized = false;
 
-async function ensureDumpDir(): Promise<void> {
+async function ensureSmithDirs(): Promise<void> {
   if (initialized) return;
 
-  try {
-    await Deno.mkdir(DUMPS_DIR, { recursive: true });
-  } catch (err) {
-    if (!(err instanceof Deno.errors.AlreadyExists)) {
-      console.error("[Dump] Failed to create directory:", err);
+  for (const dir of SMITH_DIRS) {
+    try {
+      await Deno.mkdir(dir, { recursive: true });
+    } catch (err) {
+      if (!(err instanceof Deno.errors.AlreadyExists)) {
+        console.error(`[Smith] Failed to create ${dir}:`, err);
+      }
     }
   }
   initialized = true;
@@ -28,7 +37,7 @@ export async function dump(
   content: string,
   metadata?: Record<string, unknown>,
 ): Promise<void> {
-  await ensureDumpDir();
+  await ensureSmithDirs();
 
   const timestamp = new Date().toISOString();
   const metaStr = metadata ? ` ${JSON.stringify(metadata)}` : "";
@@ -45,7 +54,7 @@ export async function searchDumps(
   pattern: string,
   chatId?: number,
 ): Promise<{ file: string; matches: string[] }[]> {
-  await ensureDumpDir();
+  await ensureSmithDirs();
 
   const results: { file: string; matches: string[] }[] = [];
 
