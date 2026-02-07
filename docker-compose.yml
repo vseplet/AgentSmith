@@ -1,0 +1,10 @@
+services:
+  smith:
+    build: .
+    env_file: .env
+    volumes:
+      - smith-data:/data
+    restart: unless-stopped
+
+volumes:
+  smith-data:

@@ -1,0 +1,6 @@
+.env
+.git
+.smith
+.DS_Store
+.vscode
+node_modules
