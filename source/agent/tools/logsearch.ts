@@ -1,5 +1,5 @@
 import type { Tool } from "#types";
-import { getLogDir, searchLogs } from "#logger";
+import { getDumpDir, searchDumps } from "#logger";
 
 export const logSearchTool: Tool = {
   name: "search_history",
@@ -28,13 +28,13 @@ export const logSearchTool: Tool = {
       return { error: "pattern is required" };
     }
 
-    const results = await searchLogs(pattern, chatId);
+    const results = await searchDumps(pattern, chatId);
 
     if (results.length === 0) {
       return {
         message: "No matches found",
         pattern,
-        log_dir: getLogDir(),
+        dump_dir: getDumpDir(),
       };
     }
 

@@ -1,11 +1,13 @@
 import { ConfigKey } from "#types";
 import type { Config, ConfigKeyType } from "#types";
+import { getKv } from "#common";
 
 export { ConfigKey };
 export type { Config, ConfigKeyType };
 
 // Mapping from KV keys to ENV variable names
 const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
+  [ConfigKey.AGENT_PROFILE]: "AGENT_PROFILE",
   [ConfigKey.LLM_PROVIDER]: "LLM_PROVIDER",
   [ConfigKey.DEEPSEEK_API_KEY]: "DEEPSEEK_API_KEY",
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "DEEPSEEK_MODEL_NAME",
@@ -19,6 +21,7 @@ const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
 
 // Default values
 const DEFAULTS: Partial<Record<ConfigKeyType, string>> = {
+  [ConfigKey.AGENT_PROFILE]: "smith",
   [ConfigKey.LLM_PROVIDER]: "deepseek",
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "deepseek-chat",
   [ConfigKey.LMSTUDIO_BASE_URL]: "http://100.107.243.60:1234/v1",
@@ -33,16 +36,6 @@ function getEnvValue(key: ConfigKeyType): string | null {
 
 // KV prefix for config storage
 const KV_PREFIX = ["config"] as const;
-
-// KV instance (lazy initialization)
-let kv: Deno.Kv | null = null;
-
-async function getKv(): Promise<Deno.Kv> {
-  if (!kv) {
-    kv = await Deno.openKv();
-  }
-  return kv;
-}
 
 // Get value directly from KV (for testing)
 export async function getKvValue(key: ConfigKeyType): Promise<string | null> {
@@ -88,6 +81,7 @@ export async function deleteConfigValue(key: ConfigKeyType): Promise<void> {
 
 export async function getAllConfig(): Promise<Config> {
   const [
+    agentProfile,
     llmProvider,
     deepseekKey,
     deepseekModel,
@@ -98,6 +92,7 @@ export async function getAllConfig(): Promise<Config> {
     telegramCode,
     moltbookKey,
   ] = await Promise.all([
+    getConfigValue(ConfigKey.AGENT_PROFILE),
     getConfigValue(ConfigKey.LLM_PROVIDER),
     getConfigValue(ConfigKey.DEEPSEEK_API_KEY),
     getConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME),
@@ -110,6 +105,7 @@ export async function getAllConfig(): Promise<Config> {
   ]);
 
   return {
+    [ConfigKey.AGENT_PROFILE]: agentProfile,
     [ConfigKey.LLM_PROVIDER]: llmProvider,
     [ConfigKey.DEEPSEEK_API_KEY]: deepseekKey,
     [ConfigKey.DEEPSEEK_MODEL_NAME]: deepseekModel,
@@ -120,6 +116,15 @@ export async function getAllConfig(): Promise<Config> {
     [ConfigKey.TELEGRAM_CODE]: telegramCode,
     [ConfigKey.MOLTBOOK_API_KEY]: moltbookKey,
   };
+}
+
+// Agent Profile helpers
+export async function getAgentProfile(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.AGENT_PROFILE);
+}
+
+export async function setAgentProfile(profile: string): Promise<void> {
+  await setConfigValue(ConfigKey.AGENT_PROFILE, profile);
 }
 
 // LLM Provider helpers
@@ -202,10 +207,3 @@ export async function setMoltbookApiKey(apiKey: string): Promise<void> {
   await setConfigValue(ConfigKey.MOLTBOOK_API_KEY, apiKey);
 }
 
-// Close KV connection (for cleanup)
-export function closeKv(): void {
-  if (kv) {
-    kv.close();
-    kv = null;
-  }
-}

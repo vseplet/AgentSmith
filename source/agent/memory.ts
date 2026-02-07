@@ -1,16 +1,8 @@
 import type { Memory, MemoryMessage } from "#types";
+import { getKv } from "#common";
 
 const MAX_MESSAGES = 20;
 const SUMMARY_THRESHOLD = 15;
-
-let kv: Deno.Kv | null = null;
-
-async function getKv(): Promise<Deno.Kv> {
-  if (!kv) {
-    kv = await Deno.openKv();
-  }
-  return kv;
-}
 
 export async function getMemory(chatId: number): Promise<Memory> {
   const store = await getKv();

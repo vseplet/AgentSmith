@@ -1,13 +1,5 @@
 import type { TelegramContact, TelegramGroup } from "#types";
-
-let kv: Deno.Kv | null = null;
-
-async function getKv(): Promise<Deno.Kv> {
-  if (!kv) {
-    kv = await Deno.openKv();
-  }
-  return kv;
-}
+import { getKv } from "#common";
 
 // ============================================
 // Contacts

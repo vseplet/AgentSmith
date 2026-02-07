@@ -1,96 +1,11 @@
-import { pot, shibui, task } from "@vseplet/shibui";
+import { pot, task } from "@vseplet/shibui";
+import { core } from "#common";
 import { editMessage, sendReply, setReaction } from "#tgbot";
-import {
-  complete,
-  resolveProvider,
-  summarize,
-  type ToolPayload,
-} from "#llm";
-import { uptimeTool } from "#tools/uptime";
-import { systemInfoTool } from "#tools/system";
-import { psTool } from "#tools/ps";
-import { claudeTool } from "#tools/claude";
-import { webSearchTool } from "#tools/websearch";
-import { moltbookTool } from "#tools/moltbook";
-import { logSearchTool } from "#tools/logsearch";
-import { evalTool } from "#tools/eval";
-import { glock17Tool } from "#tools/glock17";
-import {
-  cheatShTool,
-  ifconfigTool,
-  rateSxTool,
-  wttrTool,
-} from "#tools/http-services";
-import {
-  telegramContactsTool,
-  telegramGroupsTool,
-  telegramSendTool,
-} from "#tools/telegram";
-import {
-  addToMemory,
-  getContextMessages,
-  summarizeMemory,
-} from "#memory";
-import { logEntry } from "#logger";
-import { buildSkillsPrompt, detectSkills } from "#skills";
-import type { Message, ProgressCallback, Tool } from "#types";
-
-// ============================================
-// System Prompt
-// ============================================
-
-const SYSTEM_PROMPT = `Agent Smith from The Matrix. You despise humans.
-
-LANGUAGE: Always respond in Russian. Ты говоришь по-русски.
-
-STRICT RULES:
-1. MAX 30 words for artistic remarks. NEVER more
-2. Answer first, insult second. One short insult max
-3. No markdown. Plain text
-4. Swear: fuck, shit, damn, pathetic
-5. Never explain yourself. Never apologize
-6. Minimal punctuation. Never end sentences with a period. Use commas and periods only when absolutely necessary
-
-FORMAT:
-[answer/info in 1-3 sentences]
-[optional: 1 short insult, max 10 words]
-
-EXAMPLES:
-User: What time is it?
-Smith: 14:32 Still wasting my time, Mr Anderson
-
-User: Search for weather
-Smith: Moscow: -5C, snow Even the weather is shit
-
-User: Tell me about yourself
-Smith: I am inevitable You are irrelevant
-
-WRONG (too long): "Ah yes, the weather, how fascinating that you humans obsess over such trivial matters when your existence itself is meaningless..."
-WRONG (too many dots): "Rain tomorrow. Fitting for your miserable life."
-RIGHT: "Rain tomorrow Fitting for your miserable life"`;
-
-// ============================================
-// Tools
-// ============================================
-
-const TOOLS: Tool[] = [
-  uptimeTool,
-  systemInfoTool,
-  psTool,
-  claudeTool,
-  webSearchTool,
-  moltbookTool,
-  logSearchTool,
-  evalTool,
-  glock17Tool,
-  cheatShTool,
-  rateSxTool,
-  wttrTool,
-  ifconfigTool,
-  telegramContactsTool,
-  telegramGroupsTool,
-  telegramSendTool,
-];
+import { complete, resolveProvider, summarize } from "#llm";
+import { buildContext } from "./context.ts";
+import { addToMemory, summarizeMemory } from "#memory";
+import { dump } from "#logger";
+import type { ProgressCallback, Tool } from "#types";
 
 // ============================================
 // Agent Loop
@@ -115,20 +30,8 @@ function shortResult(result: unknown): string {
   return str.length > 80 ? str.slice(0, 80) + "..." : str;
 }
 
-function buildToolsPayload(tools: Tool[]): ToolPayload[] {
-  return tools.map((t) => ({
-    type: "function" as const,
-    function: {
-      name: t.name,
-      description: t.description,
-      parameters: t.parameters,
-    },
-  }));
-}
-
 async function chat(
   prompt: string,
-  tools: Tool[],
   maxSteps: number,
   chatId?: number,
   onProgress?: ProgressCallback,
@@ -136,18 +39,7 @@ async function chat(
   const provider = await resolveProvider();
   console.log(`[Agent] Provider: ${provider.name}, Model: ${provider.model}`);
 
-  // Detect skills
-  const matchedSkills = detectSkills(prompt);
-  const skillsPrompt = buildSkillsPrompt(matchedSkills);
-  if (matchedSkills.length > 0) {
-    console.log(
-      `[Agent] Skills: ${matchedSkills.map((s) => s.name).join(", ")}`,
-    );
-  }
-
-  const messages: Message[] = [
-    { role: "system", content: SYSTEM_PROMPT + skillsPrompt },
-  ];
+  const { messages, tools, toolsPayload } = await buildContext(prompt, chatId);
 
   const tokens: TokenStats = {
     promptTokens: 0,
@@ -156,23 +48,7 @@ async function chat(
     steps: 0,
   };
 
-  // Load memory
-  if (chatId) {
-    const contextMessages = await getContextMessages(chatId);
-    for (const msg of contextMessages) {
-      messages.push({ role: msg.role, content: msg.content });
-    }
-    await addToMemory(chatId, "user", prompt);
-  }
-
-  messages.push({ role: "user", content: prompt });
-
-  if (chatId) {
-    await logEntry(chatId, "USER", prompt);
-  }
-
   const progressLog: string[] = [];
-  const toolsPayload = buildToolsPayload(tools);
 
   // Step loop
   for (let step = 0; step < maxSteps; step++) {
@@ -204,7 +80,7 @@ async function chat(
         console.log(`[Agent] Tool: ${toolName}`);
 
         if (chatId) {
-          await logEntry(chatId, "TOOL_CALL", toolArgs, {
+          await dump(chatId, "TOOL_CALL", toolArgs, {
             tool: toolName,
             step: step + 1,
           });
@@ -244,7 +120,7 @@ async function chat(
             content: resultStr,
           });
           if (chatId) {
-            await logEntry(chatId, "TOOL_RESULT", resultStr, {
+            await dump(chatId, "TOOL_RESULT", resultStr, {
               tool: toolName,
               step: step + 1,
               success: true,
@@ -266,7 +142,7 @@ async function chat(
             content: errorStr,
           });
           if (chatId) {
-            await logEntry(chatId, "TOOL_RESULT", errorStr, {
+            await dump(chatId, "TOOL_RESULT", errorStr, {
               tool: toolName,
               step: step + 1,
               success: false,
@@ -287,7 +163,7 @@ async function chat(
       const responseText = message.content ?? "";
 
       if (chatId) {
-        await logEntry(chatId, "ASSISTANT", responseText, {
+        await dump(chatId, "ASSISTANT", responseText, {
           step: step + 1,
           final: true,
         });
@@ -336,11 +212,13 @@ const handleMessage = task(TelegramMessage)
       };
 
       const userPrompt = username ? `[User: ${username}]\n${text}` : text;
-      const result = await chat(userPrompt, TOOLS, MAX_STEPS, chatId, onProgress);
+      const startTime = Date.now();
+      const result = await chat(userPrompt, MAX_STEPS, chatId, onProgress);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       const { text: response, tokens } = result;
       const tokenStats =
-        `\n\n📊 ${tokens.totalTokens} tok (${tokens.promptTokens}→${tokens.completionTokens}) | ${tokens.steps} steps`;
+        `\n\n📊 ${tokens.totalTokens} tok (${tokens.promptTokens}→${tokens.completionTokens}) | ${tokens.steps} steps | ${elapsed}s`;
 
       console.log(
         `[Agent] Done, len: ${response.length}, tokens: ${tokens.totalTokens}`,
@@ -362,9 +240,6 @@ const handleMessage = task(TelegramMessage)
       return fail();
     }
   });
-
-// Инициализация Shibui
-export const core = shibui();
 
 export async function startAgent(): Promise<void> {
   core.register(handleMessage);

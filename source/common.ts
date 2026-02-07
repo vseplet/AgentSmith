@@ -1,5 +1,12 @@
-import { pot, shibui, task } from "@vseplet/shibui";
+import { shibui } from "@vseplet/shibui";
 
-export const shibui = shibui();
+export const core = shibui();
 
-export const kv = Deno.openKv();
+let _kv: Deno.Kv | null = null;
+
+export async function getKv(): Promise<Deno.Kv> {
+  if (!_kv) {
+    _kv = await Deno.openKv();
+  }
+  return _kv;
+}

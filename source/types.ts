@@ -66,6 +66,7 @@ export interface Memory {
 // ============================================
 
 export const ConfigKey = {
+  AGENT_PROFILE: "agent_profile",
   LLM_PROVIDER: "llm_provider",
   DEEPSEEK_API_KEY: "deepseek_api_key",
   DEEPSEEK_MODEL_NAME: "deepseek_model_name",
@@ -80,6 +81,7 @@ export const ConfigKey = {
 export type ConfigKeyType = typeof ConfigKey[keyof typeof ConfigKey];
 
 export interface Config {
+  [ConfigKey.AGENT_PROFILE]: string | null;
   [ConfigKey.LLM_PROVIDER]: string | null;
   [ConfigKey.DEEPSEEK_API_KEY]: string | null;
   [ConfigKey.DEEPSEEK_MODEL_NAME]: string | null;
