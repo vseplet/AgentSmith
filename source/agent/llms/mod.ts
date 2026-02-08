@@ -9,15 +9,18 @@ import { getProviderConfig as getLMStudioConfig, setupFields as lmstudioFields }
 import { getProviderConfig as getOllamaConfig, setupFields as ollamaFields } from "./ollama.ts";
 import { getProviderConfig as getOpenAIConfig, setupFields as openaiFields } from "./openai.ts";
 import { getProviderConfig as getAnthropicConfig, setupFields as anthropicFields } from "./anthropic.ts";
+import { getProviderConfig as getChatGPTConfig, setupFields as chatgptFields, complete as chatgptComplete } from "./chatgpt.ts";
 
 interface ProviderEntry {
   getConfig: () => Promise<ProviderConfig>;
   setupFields: ProviderSetupField[];
+  complete?: (messages: Message[], tools?: ToolPayload[]) => Promise<CompletionResult | null>;
 }
 
 const PROVIDERS: Record<string, ProviderEntry> = {
   deepseek: { getConfig: getDeepSeekConfig, setupFields: deepseekFields },
   openai: { getConfig: getOpenAIConfig, setupFields: openaiFields },
+  "openai-oauth": { getConfig: getChatGPTConfig, setupFields: chatgptFields, complete: chatgptComplete },
   anthropic: { getConfig: getAnthropicConfig, setupFields: anthropicFields },
   ollama: { getConfig: getOllamaConfig, setupFields: ollamaFields },
   lmstudio: { getConfig: getLMStudioConfig, setupFields: lmstudioFields },
@@ -106,6 +109,15 @@ export async function complete(
   tools?: ToolPayload[],
   provider?: ProviderConfig,
 ): Promise<CompletionResult> {
+  const providerName = provider?.name ?? (await getLLMProvider()) ?? "deepseek";
+
+  // Check if the provider has a custom complete (e.g. OpenAI OAuth → Responses API)
+  const entry = PROVIDERS[providerName];
+  if (entry?.complete) {
+    const result = await entry.complete(messages, tools);
+    if (result) return result;
+  }
+
   const p = provider ?? await resolveProvider();
   const client = createClient(p);
 

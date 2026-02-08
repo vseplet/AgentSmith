@@ -23,6 +23,7 @@ const SECRET_KEYS: Set<string> = new Set([
   ConfigKey.DEEPSEEK_API_KEY,
   ConfigKey.OPENAI_API_KEY,
   ConfigKey.ANTHROPIC_API_KEY,
+  ConfigKey.CHATGPT_REFRESH_TOKEN,
   ConfigKey.MOLTBOOK_API_KEY,
 ]);
 

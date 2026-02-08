@@ -60,6 +60,7 @@ export interface ProviderSetupField {
   secret: boolean;
   default?: string;
   options?: (values: Record<string, string>) => Promise<string[]>;
+  resolve?: (values: Record<string, string>) => Promise<string>;
 }
 
 export interface CompletionResult {
@@ -137,6 +138,7 @@ export const ConfigKey = {
   OLLAMA_MODEL_NAME: "ollama_model_name",
   OPENAI_API_KEY: "openai_api_key",
   OPENAI_MODEL_NAME: "openai_model_name",
+  CHATGPT_REFRESH_TOKEN: "chatgpt_refresh_token",
   ANTHROPIC_API_KEY: "anthropic_api_key",
   ANTHROPIC_MODEL_NAME: "anthropic_model_name",
   TELEGRAM_BOT_API_KEY: "telegram_bot_api_key",
@@ -158,6 +160,7 @@ export interface Config {
   [ConfigKey.OLLAMA_MODEL_NAME]: string | null;
   [ConfigKey.OPENAI_API_KEY]: string | null;
   [ConfigKey.OPENAI_MODEL_NAME]: string | null;
+  [ConfigKey.CHATGPT_REFRESH_TOKEN]: string | null;
   [ConfigKey.ANTHROPIC_API_KEY]: string | null;
   [ConfigKey.ANTHROPIC_MODEL_NAME]: string | null;
   [ConfigKey.TELEGRAM_BOT_API_KEY]: string | null;

@@ -1,4 +1,5 @@
 .env
+.env.test
 .smith
 .DS_Store
 .claude

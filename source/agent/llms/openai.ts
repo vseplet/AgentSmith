@@ -1,9 +1,18 @@
-import { getOpenAIApiKey, getOpenAIModelName, ConfigKey } from "#config";
+import { Secret } from "@cliffy/prompt";
+import {
+  getOpenAIApiKey,
+  getOpenAIModelName,
+  ConfigKey,
+} from "#config";
 import type { ProviderConfig, ProviderSetupField } from "#types";
 import { fetchModels } from "./utils.ts";
 
 export const setupFields: ProviderSetupField[] = [
-  { key: ConfigKey.OPENAI_API_KEY, label: "OpenAI API Key", secret: true },
+  {
+    key: ConfigKey.OPENAI_API_KEY,
+    label: "OpenAI API Key",
+    secret: true,
+  },
   {
     key: ConfigKey.OPENAI_MODEL_NAME,
     label: "OpenAI model",
@@ -18,7 +27,8 @@ export const setupFields: ProviderSetupField[] = [
 
 export async function getProviderConfig(): Promise<ProviderConfig> {
   const apiKey = await getOpenAIApiKey();
-  if (!apiKey) throw new Error("OPENAI_API_KEY not set");
+  if (!apiKey) throw new Error("OPENAI_API_KEY not set, run: smith setup llm");
+
   const model = (await getOpenAIModelName()) ?? "gpt-4o";
 
   return {

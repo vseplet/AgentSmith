@@ -17,6 +17,7 @@ const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
   [ConfigKey.OLLAMA_MODEL_NAME]: "OLLAMA_MODEL_NAME",
   [ConfigKey.OPENAI_API_KEY]: "OPENAI_API_KEY",
   [ConfigKey.OPENAI_MODEL_NAME]: "OPENAI_MODEL_NAME",
+  [ConfigKey.CHATGPT_REFRESH_TOKEN]: "CHATGPT_REFRESH_TOKEN",
   [ConfigKey.ANTHROPIC_API_KEY]: "ANTHROPIC_API_KEY",
   [ConfigKey.ANTHROPIC_MODEL_NAME]: "ANTHROPIC_MODEL_NAME",
   [ConfigKey.TELEGRAM_BOT_API_KEY]: "TELEGRAM_BOT_API_KEY",
@@ -167,6 +168,11 @@ export async function getOpenAIApiKey(): Promise<string | null> {
 
 export async function getOpenAIModelName(): Promise<string | null> {
   return await getConfigValue(ConfigKey.OPENAI_MODEL_NAME);
+}
+
+// ChatGPT OAuth helpers
+export async function getChatGPTRefreshToken(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.CHATGPT_REFRESH_TOKEN);
 }
 
 // Anthropic helpers

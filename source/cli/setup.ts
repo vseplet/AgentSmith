@@ -48,6 +48,7 @@ export async function setupProfile(): Promise<void> {
 
   await setAgentProfile(agentProfile);
   console.log("Profile saved.");
+  Deno.exit(0);
 }
 
 export async function setupTelegram(): Promise<void> {
@@ -77,6 +78,7 @@ export async function setupTelegram(): Promise<void> {
   await setTelegramBotApiKey(telegramBotApiKey);
   await setTelegramCode(telegramCode);
   console.log("Telegram configuration saved.");
+  Deno.exit(0);
 }
 
 export async function setupLLM(): Promise<void> {
@@ -107,7 +109,10 @@ export async function setupLLM(): Promise<void> {
       continue;
     }
 
-    if (field.secret) {
+    if (field.resolve) {
+      console.log(`  ${field.label}...`);
+      values[field.key] = await field.resolve(values);
+    } else if (field.secret) {
       values[field.key] = await Secret.prompt({ message: field.label });
     } else if (field.options) {
       let modelList: string[] = [];
@@ -145,6 +150,7 @@ export async function setupLLM(): Promise<void> {
   }
 
   console.log("LLM configuration saved.");
+  Deno.exit(0);
 }
 
 export async function runSetup(): Promise<void> {
