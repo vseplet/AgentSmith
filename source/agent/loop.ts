@@ -12,7 +12,6 @@ import type { ChatResult, ProgressCallback, TokenStats } from "#types";
 // ============================================
 
 const MAX_STEPS = 10;
-const DANGEROUS_TOOLS = new Set(["run_shell_command", "eval_code"]);
 
 function shortResult(result: unknown): string {
   const str = JSON.stringify(result);
@@ -104,7 +103,7 @@ async function chat(
           const args = JSON.parse(toolCall.function.arguments);
 
           // Check approval for dangerous tools
-          if (chatId && DANGEROUS_TOOLS.has(toolName)) {
+          if (chatId && tool.dangerous) {
             const approved = await requestApproval(
               chatId,
               toolName,

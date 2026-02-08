@@ -5,6 +5,7 @@
 export interface Tool {
   name: string;
   description: string;
+  dangerous?: boolean;
   parameters: {
     type: "object";
     properties: Record<string, unknown>;

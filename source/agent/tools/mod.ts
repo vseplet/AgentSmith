@@ -9,6 +9,7 @@ import { logSearchTool } from "./logsearch.ts";
 import { evalTool } from "./eval.ts";
 import { cheatShTool, rateSxTool, wttrTool, ifconfigTool } from "./http-services.ts";
 import { telegramContactsTool, telegramGroupsTool, telegramSendTool } from "./telegram.ts";
+import { screenshotTool } from "./screenshot.ts";
 
 export const TOOLS: Tool[] = [
   uptimeTool,
@@ -27,4 +28,5 @@ export const TOOLS: Tool[] = [
   telegramContactsTool,
   telegramGroupsTool,
   telegramSendTool,
+  screenshotTool,
 ];

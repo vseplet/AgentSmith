@@ -4,6 +4,7 @@ export const evalTool: Tool = {
   name: "eval_code",
   description:
     "Execute JavaScript/TypeScript code in a sandboxed Deno environment (no permissions). Use for calculations, data processing, string manipulation, algorithms. Returns the result of the last expression.",
+  dangerous: true,
   parameters: {
     type: "object",
     properties: {

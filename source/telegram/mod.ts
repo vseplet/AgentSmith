@@ -1,4 +1,4 @@
-import { Bot } from "grammy";
+import { Bot, InputFile } from "grammy";
 import {
   getAllConfig,
   getTelegramBotApiKey,
@@ -47,6 +47,21 @@ export async function sendMessage(
   if (!bot) return 0;
 
   const result = await bot.api.sendMessage(chatId, truncateMessage(text));
+  return result.message_id;
+}
+
+export async function sendPhoto(
+  chatId: number,
+  filePath: string,
+  caption?: string,
+): Promise<number> {
+  if (!bot) return 0;
+
+  const result = await bot.api.sendPhoto(
+    chatId,
+    new InputFile(filePath),
+    caption ? { caption } : undefined,
+  );
   return result.message_id;
 }
 
@@ -103,6 +118,13 @@ export async function startBot(): Promise<void> {
           ? (approved ? "✅ Approved" : "❌ Denied")
           : "⏰ Expired",
       });
+      if (handled) {
+        const status = approved ? "✅ Approved" : "❌ Denied";
+        const originalText = ctx.callbackQuery.message?.text ?? "";
+        await ctx.editMessageText(`${originalText}\n\n${status}`, {
+          reply_markup: undefined,
+        });
+      }
     }
   });
 

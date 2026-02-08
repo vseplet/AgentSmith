@@ -86,6 +86,7 @@ export const shellTool: Tool = {
   name: "run_shell_command",
   description:
     "Execute a shell command and return the output. Use for any terminal commands like ls, cat, grep, etc.",
+  dangerous: true,
   parameters: {
     type: "object",
     properties: {

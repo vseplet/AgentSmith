@@ -39,6 +39,7 @@
     "#tools/logsearch": "./source/agent/tools/logsearch.ts",
     "#tools/eval": "./source/agent/tools/eval.ts",
     "#tools/http-services": "./source/agent/tools/http-services.ts",
-    "#tools/telegram": "./source/agent/tools/telegram.ts"
+    "#tools/telegram": "./source/agent/tools/telegram.ts",
+    "#tools/screenshot": "./source/agent/tools/screenshot.ts"
   }
 }
