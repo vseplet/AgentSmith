@@ -13,6 +13,12 @@ const ENV_KEY_MAP: Record<ConfigKeyType, string> = {
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "DEEPSEEK_MODEL_NAME",
   [ConfigKey.LMSTUDIO_BASE_URL]: "LMSTUDIO_BASE_URL",
   [ConfigKey.LMSTUDIO_MODEL_NAME]: "LMSTUDIO_MODEL_NAME",
+  [ConfigKey.OLLAMA_BASE_URL]: "OLLAMA_BASE_URL",
+  [ConfigKey.OLLAMA_MODEL_NAME]: "OLLAMA_MODEL_NAME",
+  [ConfigKey.OPENAI_API_KEY]: "OPENAI_API_KEY",
+  [ConfigKey.OPENAI_MODEL_NAME]: "OPENAI_MODEL_NAME",
+  [ConfigKey.ANTHROPIC_API_KEY]: "ANTHROPIC_API_KEY",
+  [ConfigKey.ANTHROPIC_MODEL_NAME]: "ANTHROPIC_MODEL_NAME",
   [ConfigKey.TELEGRAM_BOT_API_KEY]: "TELEGRAM_BOT_API_KEY",
   [ConfigKey.TELEGRAM_USER_ID]: "TELEGRAM_USER_ID",
   [ConfigKey.TELEGRAM_CODE]: "TELEGRAM_CODE",
@@ -25,6 +31,9 @@ const DEFAULTS: Partial<Record<ConfigKeyType, string>> = {
   [ConfigKey.LLM_PROVIDER]: "deepseek",
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "deepseek-chat",
   [ConfigKey.LMSTUDIO_BASE_URL]: "http://100.107.243.60:1234/v1",
+  [ConfigKey.OLLAMA_BASE_URL]: "http://localhost:11434/v1",
+  [ConfigKey.OPENAI_MODEL_NAME]: "gpt-4o",
+  [ConfigKey.ANTHROPIC_MODEL_NAME]: "claude-sonnet-4-20250514",
 };
 
 // Get value from environment variable
@@ -80,42 +89,13 @@ export async function deleteConfigValue(key: ConfigKeyType): Promise<void> {
 }
 
 export async function getAllConfig(): Promise<Config> {
-  const [
-    agentProfile,
-    llmProvider,
-    deepseekKey,
-    deepseekModel,
-    lmstudioBaseUrl,
-    lmstudioModel,
-    telegramKey,
-    telegramUserId,
-    telegramCode,
-    moltbookKey,
-  ] = await Promise.all([
-    getConfigValue(ConfigKey.AGENT_PROFILE),
-    getConfigValue(ConfigKey.LLM_PROVIDER),
-    getConfigValue(ConfigKey.DEEPSEEK_API_KEY),
-    getConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME),
-    getConfigValue(ConfigKey.LMSTUDIO_BASE_URL),
-    getConfigValue(ConfigKey.LMSTUDIO_MODEL_NAME),
-    getConfigValue(ConfigKey.TELEGRAM_BOT_API_KEY),
-    getConfigValue(ConfigKey.TELEGRAM_USER_ID),
-    getConfigValue(ConfigKey.TELEGRAM_CODE),
-    getConfigValue(ConfigKey.MOLTBOOK_API_KEY),
-  ]);
-
-  return {
-    [ConfigKey.AGENT_PROFILE]: agentProfile,
-    [ConfigKey.LLM_PROVIDER]: llmProvider,
-    [ConfigKey.DEEPSEEK_API_KEY]: deepseekKey,
-    [ConfigKey.DEEPSEEK_MODEL_NAME]: deepseekModel,
-    [ConfigKey.LMSTUDIO_BASE_URL]: lmstudioBaseUrl,
-    [ConfigKey.LMSTUDIO_MODEL_NAME]: lmstudioModel,
-    [ConfigKey.TELEGRAM_BOT_API_KEY]: telegramKey,
-    [ConfigKey.TELEGRAM_USER_ID]: telegramUserId,
-    [ConfigKey.TELEGRAM_CODE]: telegramCode,
-    [ConfigKey.MOLTBOOK_API_KEY]: moltbookKey,
-  };
+  const keys = Object.values(ConfigKey) as ConfigKeyType[];
+  const values = await Promise.all(keys.map((k) => getConfigValue(k)));
+  const config: Record<string, string | null> = {};
+  keys.forEach((key, i) => {
+    config[key] = values[i];
+  });
+  return config as unknown as Config;
 }
 
 // Agent Profile helpers
@@ -169,6 +149,33 @@ export async function getLMStudioModelName(): Promise<string | null> {
 
 export async function setLMStudioModelName(modelName: string): Promise<void> {
   await setConfigValue(ConfigKey.LMSTUDIO_MODEL_NAME, modelName);
+}
+
+// Ollama helpers
+export async function getOllamaBaseURL(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.OLLAMA_BASE_URL);
+}
+
+export async function getOllamaModelName(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.OLLAMA_MODEL_NAME);
+}
+
+// OpenAI helpers
+export async function getOpenAIApiKey(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.OPENAI_API_KEY);
+}
+
+export async function getOpenAIModelName(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.OPENAI_MODEL_NAME);
+}
+
+// Anthropic helpers
+export async function getAnthropicApiKey(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.ANTHROPIC_API_KEY);
+}
+
+export async function getAnthropicModelName(): Promise<string | null> {
+  return await getConfigValue(ConfigKey.ANTHROPIC_MODEL_NAME);
 }
 
 // Telegram Bot API key helpers

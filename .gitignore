@@ -1,4 +1,6 @@
 .env
 .smith
 .DS_Store
-.claude.smith
+.claude
+.smith
+.vscode

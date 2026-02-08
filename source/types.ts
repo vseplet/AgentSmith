@@ -54,6 +54,14 @@ export interface ProviderConfig {
   rps: number;
 }
 
+export interface ProviderSetupField {
+  key: ConfigKeyType;
+  label: string;
+  secret: boolean;
+  default?: string;
+  options?: (values: Record<string, string>) => Promise<string[]>;
+}
+
 export interface CompletionResult {
   message: {
     role: string;
@@ -125,6 +133,12 @@ export const ConfigKey = {
   DEEPSEEK_MODEL_NAME: "deepseek_model_name",
   LMSTUDIO_BASE_URL: "lmstudio_base_url",
   LMSTUDIO_MODEL_NAME: "lmstudio_model_name",
+  OLLAMA_BASE_URL: "ollama_base_url",
+  OLLAMA_MODEL_NAME: "ollama_model_name",
+  OPENAI_API_KEY: "openai_api_key",
+  OPENAI_MODEL_NAME: "openai_model_name",
+  ANTHROPIC_API_KEY: "anthropic_api_key",
+  ANTHROPIC_MODEL_NAME: "anthropic_model_name",
   TELEGRAM_BOT_API_KEY: "telegram_bot_api_key",
   TELEGRAM_USER_ID: "telegram_user_id",
   TELEGRAM_CODE: "telegram_code",
@@ -140,6 +154,12 @@ export interface Config {
   [ConfigKey.DEEPSEEK_MODEL_NAME]: string | null;
   [ConfigKey.LMSTUDIO_BASE_URL]: string | null;
   [ConfigKey.LMSTUDIO_MODEL_NAME]: string | null;
+  [ConfigKey.OLLAMA_BASE_URL]: string | null;
+  [ConfigKey.OLLAMA_MODEL_NAME]: string | null;
+  [ConfigKey.OPENAI_API_KEY]: string | null;
+  [ConfigKey.OPENAI_MODEL_NAME]: string | null;
+  [ConfigKey.ANTHROPIC_API_KEY]: string | null;
+  [ConfigKey.ANTHROPIC_MODEL_NAME]: string | null;
   [ConfigKey.TELEGRAM_BOT_API_KEY]: string | null;
   [ConfigKey.TELEGRAM_USER_ID]: string | null;
   [ConfigKey.TELEGRAM_CODE]: string | null;

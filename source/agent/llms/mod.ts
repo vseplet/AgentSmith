@@ -3,24 +3,46 @@ import * as v from "@valibot/valibot";
 import { getLLMProvider } from "#config";
 import type { CompletionResult, Message, ProviderConfig, ToolCall, ToolPayload } from "#types";
 
-import { getProviderConfig as getDeepSeekConfig } from "./deepseek.ts";
-import { getProviderConfig as getLMStudioConfig } from "./lmstudio.ts";
+import type { ProviderSetupField } from "#types";
+import { getProviderConfig as getDeepSeekConfig, setupFields as deepseekFields } from "./deepseek.ts";
+import { getProviderConfig as getLMStudioConfig, setupFields as lmstudioFields } from "./lmstudio.ts";
+import { getProviderConfig as getOllamaConfig, setupFields as ollamaFields } from "./ollama.ts";
+import { getProviderConfig as getOpenAIConfig, setupFields as openaiFields } from "./openai.ts";
+import { getProviderConfig as getAnthropicConfig, setupFields as anthropicFields } from "./anthropic.ts";
 
-const PROVIDERS: Record<string, () => Promise<ProviderConfig>> = {
-  deepseek: getDeepSeekConfig,
-  lmstudio: getLMStudioConfig,
+interface ProviderEntry {
+  getConfig: () => Promise<ProviderConfig>;
+  setupFields: ProviderSetupField[];
+}
+
+const PROVIDERS: Record<string, ProviderEntry> = {
+  deepseek: { getConfig: getDeepSeekConfig, setupFields: deepseekFields },
+  openai: { getConfig: getOpenAIConfig, setupFields: openaiFields },
+  anthropic: { getConfig: getAnthropicConfig, setupFields: anthropicFields },
+  ollama: { getConfig: getOllamaConfig, setupFields: ollamaFields },
+  lmstudio: { getConfig: getLMStudioConfig, setupFields: lmstudioFields },
 };
+
+export function getProviderNames(): string[] {
+  return Object.keys(PROVIDERS);
+}
+
+export function getProviderSetupFields(name: string): ProviderSetupField[] {
+  const entry = PROVIDERS[name];
+  if (!entry) throw new Error(`Unknown provider: "${name}"`);
+  return entry.setupFields;
+}
 
 export async function resolveProvider(): Promise<ProviderConfig> {
   const providerName = (await getLLMProvider()) ?? "deepseek";
-  const factory = PROVIDERS[providerName];
-  if (!factory) {
+  const entry = PROVIDERS[providerName];
+  if (!entry) {
     const available = Object.keys(PROVIDERS).join(", ");
     throw new Error(
       `Unknown LLM provider: "${providerName}". Available: ${available}`,
     );
   }
-  return await factory();
+  return await entry.getConfig();
 }
 
 // deno-lint-ignore no-explicit-any

@@ -1,12 +1,6 @@
 import { buildSkillsPrompt, detectSkills } from "#skills";
 import { getAgentProfile } from "#config";
-import { smithProfile } from "./profiles/smith.ts";
-import { defaultProfile } from "./profiles/default.ts";
-
-const PROFILES: Record<string, string> = {
-  smith: smithProfile,
-  default: defaultProfile,
-};
+import { PROFILES } from "./profiles/mod.ts";
 
 export async function buildSystemPrompt(userText: string): Promise<string> {
   const profileName = (await getAgentProfile()) ?? "smith";
