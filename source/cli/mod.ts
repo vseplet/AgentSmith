@@ -1,8 +1,9 @@
 import { Command } from "@cliffy/command";
 import { ensureDir } from "@std/fs/ensure-dir";
 import { join } from "@std/path/join";
-import { getAllConfig, ConfigKey } from "#config";
-import { runSetup, setupLLM, setupProfile, setupTelegram } from "./setup.ts";
+import { run } from "./commands/run.ts";
+import { showConfig } from "./commands/config.ts";
+import { runSetup, setupLLM, setupProfile, setupTelegram } from "./commands/setup.ts";
 
 async function ensureSmithDirs(): Promise<void> {
   const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? ".";
@@ -12,33 +13,6 @@ async function ensureSmithDirs(): Promise<void> {
   }
 }
 
-function maskSecret(value: string | null): string {
-  if (!value) return "(not set)";
-  if (value.length <= 4) return "****";
-  return value.slice(0, 2) + "****" + value.slice(-2);
-}
-
-const SECRET_KEYS: Set<string> = new Set([
-  ConfigKey.TELEGRAM_BOT_API_KEY,
-  ConfigKey.DEEPSEEK_API_KEY,
-  ConfigKey.OPENAI_API_KEY,
-  ConfigKey.ANTHROPIC_API_KEY,
-  ConfigKey.CHATGPT_REFRESH_TOKEN,
-  ConfigKey.MOLTBOOK_API_KEY,
-]);
-
-async function showConfig(): Promise<void> {
-  const config = await getAllConfig();
-  console.log("\n--- Current Configuration ---");
-  for (const [key, value] of Object.entries(config)) {
-    const display = SECRET_KEYS.has(key as typeof ConfigKey[keyof typeof ConfigKey])
-      ? maskSecret(value)
-      : (value ?? "(not set)");
-    console.log(`  ${key}: ${display}`);
-  }
-  console.log("-----------------------------\n");
-}
-
 await ensureSmithDirs();
 
 await new Command()
@@ -46,10 +20,7 @@ await new Command()
   .version("0.1.0")
   .description("AgentSmith CLI")
   .action(async () => {
-    const { startAgent } = await import("#agent");
-    const { startBot } = await import("#tgbot");
-    await startAgent();
-    await startBot();
+    await run();
   })
   .command(
     "setup",

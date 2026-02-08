@@ -1,6 +1,6 @@
 import { Confirm, Input, Secret, Select } from "@cliffy/prompt";
-import { getProfileNames } from "../agent/profiles/mod.ts";
-import { getProviderNames, getProviderSetupFields } from "../agent/llms/mod.ts";
+import { getProfileNames } from "../../agent/profiles/mod.ts";
+import { getProviderNames, getProviderSetupFields } from "../../agent/llms/mod.ts";
 import {
   getAgentProfile,
   getConfigValue,

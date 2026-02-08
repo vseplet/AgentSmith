@@ -198,6 +198,12 @@ source/
   types.ts             # все типы и интерфейсы
   config.ts            # конфигурация (ENV + KV)
   common.ts            # shibui core + Deno KV singleton
+  cli/
+    mod.ts             # CLI wiring (Cliffy commands)
+    commands/
+      run.ts           # запуск агента + бота (default action)
+      config.ts        # показ конфигурации
+      setup.ts         # интерактивный визард настройки
   agent/
     loop.ts            # агентный цикл с tool calling
     context.ts         # сборка контекста (system prompt + memory + tools)

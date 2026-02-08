@@ -7,7 +7,7 @@ import { getProviderConfig as getLMStudioConfig, setupFields as lmstudioFields }
 import { getProviderConfig as getOllamaConfig, setupFields as ollamaFields } from "./ollama.ts";
 import { getProviderConfig as getOpenAIConfig, setupFields as openaiFields } from "./openai.ts";
 import { getProviderConfig as getAnthropicConfig, setupFields as anthropicFields } from "./anthropic.ts";
-import { getProviderConfig as getChatGPTConfig, setupFields as chatgptFields, complete as chatgptComplete } from "./chatgpt.ts";
+import { getProviderConfig as getOpenAIOAuthConfig, setupFields as openaiOauthFields, complete as openaiOauthComplete } from "./openai-oauth.ts";
 
 interface ProviderEntry {
   getConfig: () => Promise<ProviderConfig>;
@@ -18,7 +18,7 @@ interface ProviderEntry {
 const PROVIDERS: Record<string, ProviderEntry> = {
   deepseek: { getConfig: getDeepSeekConfig, setupFields: deepseekFields },
   openai: { getConfig: getOpenAIConfig, setupFields: openaiFields },
-  "openai-oauth": { getConfig: getChatGPTConfig, setupFields: chatgptFields, complete: chatgptComplete },
+  "openai-oauth": { getConfig: getOpenAIOAuthConfig, setupFields: openaiOauthFields, complete: openaiOauthComplete },
   anthropic: { getConfig: getAnthropicConfig, setupFields: anthropicFields },
   ollama: { getConfig: getOllamaConfig, setupFields: ollamaFields },
   lmstudio: { getConfig: getLMStudioConfig, setupFields: lmstudioFields },
