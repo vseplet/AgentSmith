@@ -1,222 +1,231 @@
 # AgentSmith
 
-Telegram-бот с LLM-агентом, tool calling и памятью. Deno + multi-provider LLM.
+A hackable AI agent framework for Telegram. ~4K lines of TypeScript, 6 LLM providers, 15 tools, full agent loop with memory -- and every piece of code is small enough to read and modify in minutes. Clone it, make it yours.
 
-## Требования
+```
+You:   check disk space and tell me if anything is above 80%
+Smith: /dev/sda1 is at 87%, the rest is fine
+       Maybe stop hoarding cat pictures, Mr Anderson
+```
 
-- [Deno](https://deno.land/) v2+
-- Telegram Bot Token (через @BotFather)
-- API ключ одного из LLM провайдеров или ChatGPT Plus/Pro подписка
+## Why AgentSmith
 
-## Быстрый старт
+This is not a black-box SaaS. It's a starting point -- a minimal, readable codebase that you fork and bend to your needs. Want to add a tool? One file, one export. New LLM provider? Implement two functions. Custom personality? Edit a string.
+
+- **~4K lines total** -- no abstractions for the sake of abstractions. Every file does one thing, every file is short enough to fully understand
+- **Designed to be extended** -- adding a tool is ~30 lines, a new LLM provider is ~40 lines, a skill is a trigger + a prompt. The architecture stays out of your way
+- **Any LLM** -- DeepSeek, OpenAI, Claude, Ollama, LMStudio, or ChatGPT Plus via OAuth. Switch with one command, or add your own provider
+- **Runs anywhere** -- VPS, Raspberry Pi, NAS, Docker. If it runs Deno, it runs Smith
+- **15 built-in tools** -- shell, web search, process management, weather, crypto rates, system monitoring, code eval, and more
+- **Memory** -- remembers conversations, auto-summarizes old context
+- **Safe by design** -- dangerous tools (shell, eval) require explicit approval via inline buttons. 2-min timeout = auto-deny
+- **Owner-only** -- one-time code auth, then only you can talk to your bot
+
+## Getting Started
+
+### 1. Create a Telegram bot
+
+Open [@BotFather](https://t.me/BotFather) in Telegram, create a bot, save the token.
+
+### 2. Get an LLM API key
+
+Pick any provider: [DeepSeek](https://platform.deepseek.com/), [OpenAI](https://platform.openai.com/), [Anthropic](https://console.anthropic.com/), or use a local model via [Ollama](https://ollama.ai/) / [LMStudio](https://lmstudio.ai/).
+
+### 3. Install and run
 
 ```bash
-cp .env.example .env
-# заполнить .env
+# Clone
+git clone https://github.com/vseplet/AgentSmith.git
+cd AgentSmith
 
+# Interactive setup -- guides you through everything
+deno task cli setup
+
+# Or configure manually
+cp .env.example .env
+# edit .env with your keys
+
+# Run
 deno task dev
 ```
 
-## Конфигурация
+### 4. Claim your bot
 
-Приоритет: ENV -> Deno KV -> значения по умолчанию.
+Send `/code <your_code>` to your bot in Telegram (the code you set during setup). Done -- you're the owner.
 
-| Переменная | Описание | По умолчанию |
-|---|---|---|
-| `AGENT_PROFILE` | Профиль агента (`smith`, `default`) | `smith` |
-| `LLM_PROVIDER` | LLM провайдер (см. ниже) | `deepseek` |
-| `DEEPSEEK_API_KEY` | API ключ DeepSeek | - |
-| `DEEPSEEK_MODEL_NAME` | Модель DeepSeek | `deepseek-chat` |
-| `OPENAI_API_KEY` | API ключ OpenAI | - |
-| `OPENAI_MODEL_NAME` | Модель OpenAI | `gpt-4o` |
-| `ANTHROPIC_API_KEY` | API ключ Anthropic | - |
-| `ANTHROPIC_MODEL_NAME` | Модель Anthropic | `claude-sonnet-4-20250514` |
-| `LMSTUDIO_BASE_URL` | URL LMStudio API | `http://100.107.243.60:1234/v1` |
-| `LMSTUDIO_MODEL_NAME` | Модель LMStudio | - |
-| `OLLAMA_BASE_URL` | URL Ollama API | `http://localhost:11434/v1` |
-| `OLLAMA_MODEL_NAME` | Модель Ollama | - |
-| `TELEGRAM_BOT_API_KEY` | Токен Telegram бота | - |
-| `TELEGRAM_USER_ID` | ID владельца бота | - |
-| `TELEGRAM_CODE` | Код авторизации | - |
-| `MOLTBOOK_API_KEY` | API ключ Moltbook | - |
+### Docker
 
-### LLM провайдеры
+```bash
+cp .env.example .env
+# edit .env
 
-| Провайдер | API | Аутентификация |
+docker compose up -d
+```
+
+Data persists in the `smith-data` volume across container restarts.
+
+## LLM Providers
+
+| Provider | API | Auth |
 |---|---|---|
 | `deepseek` | Chat Completions | API key |
 | `openai` | Chat Completions | API key |
 | `openai-oauth` | Responses API (SSE) | ChatGPT Plus/Pro OAuth |
 | `anthropic` | Chat Completions | API key |
-| `ollama` | Chat Completions | - |
-| `lmstudio` | Chat Completions | - |
+| `ollama` | Chat Completions | -- |
+| `lmstudio` | Chat Completions | -- |
 
-Провайдер `openai-oauth` использует OAuth PKCE через `auth.openai.com` и работает через `chatgpt.com/backend-api/codex`. Для настройки: `smith setup llm` → выбрать `openai-oauth`.
+Switch anytime: `smith setup llm`
 
-## Привязка владельца
+## Tools
 
-Бот отвечает только своему владельцу. Привязка происходит через код авторизации:
+The agent can autonomously decide which tools to use based on your request:
 
-1. Задать `TELEGRAM_CODE` в `.env` (любая строка-пароль)
-2. Запустить бота
-3. Написать боту в Telegram: `/code <ваш_код>`
-4. Бот ответит "You are now registered as the owner" и запомнит ваш Telegram ID
-
-После этого `TELEGRAM_USER_ID` сохраняется в Deno KV — повторная привязка не нужна (даже после перезапуска). Все остальные пользователи получат "Access denied".
-
-## Telegram-команды
-
-| Команда | Описание |
+| Tool | What it does |
 |---|---|
-| `/start` | Приветствие |
-| `/ping` | Проверка связи |
-| `/code <код>` | Привязка владельца по коду из `TELEGRAM_CODE` |
-| `/config` | Текущая конфигурация (замаскированные ключи) |
-| `/clear` | Очистить память бота для текущего чата |
-| `/context` | Показать текущий контекст (саммари + последние сообщения) |
-| `/contacts` | Список известных контактов |
-| `/groups` | Список известных групп |
+| `run_shell_command` | Execute any shell command |
+| `eval_code` | Run JavaScript/TypeScript code |
+| `web_search` | Search the web |
+| `get_system_info` | OS, CPU, memory, disk |
+| `get_uptime` | System uptime |
+| `list_processes` | Running processes |
+| `ask_claude` | Query Claude as a sub-agent |
+| `search_history` | Search conversation logs |
+| `wttr` | Weather forecast |
+| `rate_sx` | Crypto exchange rates |
+| `cheat_sh` | Programming cheat sheets |
+| `ifconfig` | Public IP info |
+| `telegram_send` | Send messages to Telegram users/groups |
+| `telegram_contacts` | List known contacts |
+| `telegram_groups` | List known groups |
 
-Команды `/config`, `/clear`, `/context`, `/contacts`, `/groups` доступны только владельцу.
+Shell and eval require your approval via inline buttons before execution.
 
-## Команды разработки
+## Bot Commands
+
+| Command | Description |
+|---|---|
+| `/code <code>` | Claim ownership |
+| `/config` | View configuration (masked secrets) |
+| `/clear` | Clear conversation memory |
+| `/context` | Show current context (summary + recent messages) |
+| `/contacts` | List known contacts |
+| `/groups` | List known groups |
+
+---
+
+## Development
+
+### Requirements
+
+- [Deno](https://deno.land/) v2+
+- Telegram Bot Token
+- API key for at least one LLM provider
+
+### Commands
 
 ```bash
-deno task dev     # запуск с hot-reload
-deno task check   # проверка типов
-deno task fmt     # форматирование
-deno task lint    # линтер
-deno task test    # тесты
+deno task dev     # run with hot-reload
+deno task check   # type checking
+deno task fmt     # format
+deno task lint    # lint
+deno task test    # tests
 ```
 
-## Docker
+### Configuration
 
-```bash
-cp .env.example .env
-# заполнить .env
+Priority: ENV > Deno KV > defaults.
 
-docker compose up -d          # запуск
-docker compose logs -f        # логи
-docker compose down            # остановка
-docker compose up -d --build   # пересборка после изменений
-```
+| Variable | Description | Default |
+|---|---|---|
+| `AGENT_PROFILE` | Agent profile (`smith`, `default`) | `smith` |
+| `LLM_PROVIDER` | LLM provider | `deepseek` |
+| `DEEPSEEK_API_KEY` | DeepSeek API key | -- |
+| `DEEPSEEK_MODEL_NAME` | DeepSeek model | `deepseek-chat` |
+| `OPENAI_API_KEY` | OpenAI API key | -- |
+| `OPENAI_MODEL_NAME` | OpenAI model | `gpt-4o` |
+| `ANTHROPIC_API_KEY` | Anthropic API key | -- |
+| `ANTHROPIC_MODEL_NAME` | Anthropic model | `claude-sonnet-4-20250514` |
+| `LMSTUDIO_BASE_URL` | LMStudio API URL | `http://localhost:1234/v1` |
+| `LMSTUDIO_MODEL_NAME` | LMStudio model | -- |
+| `OLLAMA_BASE_URL` | Ollama API URL | `http://localhost:11434/v1` |
+| `OLLAMA_MODEL_NAME` | Ollama model | -- |
+| `TELEGRAM_BOT_API_KEY` | Telegram bot token | -- |
+| `TELEGRAM_USER_ID` | Owner's Telegram ID | -- |
+| `TELEGRAM_CODE` | Authorization code | -- |
+| `MOLTBOOK_API_KEY` | Moltbook API key | -- |
 
-Данные (Deno KV, дампы) хранятся в volume `smith-data` и переживают пересоздание контейнера.
+### Architecture
 
-## Как работает агент
+#### Context Assembly
 
-### Сборка контекста
-
-При получении сообщения от пользователя `buildContext()` собирает всё в единый `AgentContext`:
+On each message, `buildContext()` assembles the full agent context:
 
 ```
 1. System prompt
-   ├── Профиль (smith / default) — выбирается из конфига
-   └── Инструкции скиллов — если в тексте сообщения найдены триггеры
-2. Память (если есть chatId)
-   ├── Саммари предыдущих разговоров (если накопилось)
-   └── Последние 20 сообщений из истории
-3. Сообщение пользователя
-4. Список tools — 17 инструментов, каждый описан как JSON Schema
+   +-- Profile (smith / default)
+   +-- Skill instructions (if triggers matched)
+2. Memory (if chatId exists)
+   +-- Conversation summary
+   +-- Last 20 messages
+3. User message
+4. Tools -- 15 instruments as JSON Schema
 ```
 
-Результат — массив `messages` + массив `toolsPayload` для отправки в LLM.
+#### Agent Loop
 
-### Агентный цикл (loop)
-
-`chat()` запускает цикл до `MAX_STEPS=10` итераций:
+`chat()` runs up to `MAX_STEPS=10` iterations:
 
 ```
-resolveProvider() → выбор провайдера из конфига
-buildContext()    → сборка messages + tools
-                    │
-                    ▼
-        ┌──► complete(messages, tools, provider)
-        │         │
-        │         ├── finish_reason: "stop"
-        │         │     └── возврат текстового ответа, сохранение в память
-        │         │
-        │         └── finish_reason: "tool_calls"
-        │               ├── выполнить каждый tool call
-        │               ├── добавить результаты в messages
-        │               └──►┘ следующий step
-        │
-        └── (повтор до MAX_STEPS или "stop")
+resolveProvider() -> pick LLM from config
+buildContext()    -> assemble messages + tools
+                    |
+                    v
+        +---> complete(messages, tools, provider)
+        |         |
+        |         +-- finish_reason: "stop"
+        |         |     +-- return text, save to memory
+        |         |
+        |         +-- finish_reason: "tool_calls"
+        |               +-- approve dangerous tools (if needed)
+        |               +-- execute each tool call
+        |               +-- add results to messages
+        |               +-->+ next step
+        |
+        +-- (repeat until MAX_STEPS or "stop")
 ```
 
-На каждом шаге агент может вызвать один или несколько инструментов. Результаты выполнения добавляются обратно в `messages` и отправляются в LLM на следующей итерации, пока модель не вернёт финальный текстовый ответ.
+#### Tool Approval
 
-### Одобрение опасных тулов
+Before executing `run_shell_command` or `eval_code`, the bot edits the progress message to show the tool name and arguments with inline buttons. Owner has 2 minutes to approve or deny. No response = auto-deny.
 
-Перед выполнением потенциально опасных инструментов (`run_shell_command`, `eval_code`) бот запрашивает подтверждение у владельца через inline-кнопки (✅ Yes / ❌ No). Сообщение прогресса редактируется, показывая название тула и аргументы. Если владелец не ответил в течение 2 минут — автоматический отказ.
-
-### Запрос к LLM API
-
-Большинство провайдеров используют OpenAI-совместимый эндпоинт `POST /chat/completions`. Провайдер `openai-oauth` использует Responses API (`POST /responses`) через SSE-стриминг.
-
-Тело запроса:
-
-```json
-{
-  "model": "deepseek-chat",
-  "messages": [
-    { "role": "system", "content": "профиль + скиллы" },
-    { "role": "assistant", "content": "Previous conversation summary: ..." },
-    { "role": "user", "content": "предыдущее сообщение" },
-    { "role": "assistant", "content": "предыдущий ответ" },
-    { "role": "user", "content": "текущее сообщение" }
-  ],
-  "tools": [
-    {
-      "type": "function",
-      "function": {
-        "name": "web_search",
-        "description": "...",
-        "parameters": { "type": "object", "properties": { ... } }
-      }
-    }
-  ],
-  "tool_choice": "auto"
-}
-```
-
-Если модель решает вызвать инструмент, ответ содержит `tool_calls`. Агент выполняет их и добавляет результат:
-
-```json
-{ "role": "tool", "tool_call_id": "call_abc", "content": "{...}" }
-```
-
-После чего весь массив messages отправляется повторно — модель видит результат и либо вызывает ещё инструменты, либо отвечает текстом.
-
-Ответ валидируется через Valibot-схему, токены суммируются по всем шагам.
-
-## Структура
+### Project Structure
 
 ```
 source/
-  main.ts              # точка входа
-  types.ts             # все типы и интерфейсы
-  config.ts            # конфигурация (ENV + KV)
+  main.ts              # entry point
+  types.ts             # types and interfaces
+  config.ts            # configuration (ENV + KV)
   common.ts            # shibui core + Deno KV singleton
   cli/
     mod.ts             # CLI wiring (Cliffy commands)
     commands/
-      run.ts           # запуск агента + бота (default action)
-      config.ts        # показ конфигурации
-      setup.ts         # интерактивный визард настройки
+      run.ts           # start agent + bot (default action)
+      config.ts        # show configuration
+      setup.ts         # interactive setup wizard
   agent/
-    loop.ts            # агентный цикл с tool calling
-    context.ts         # сборка контекста (system prompt + memory + tools)
-    system-prompt.ts   # построение системного промпта
-    memory.ts          # память с авто-суммаризацией
-    dump.ts            # дампы в ~/.smith/dumps/
-    profiles/          # профили агента (smith, default)
-    skills/            # навыки (детектятся по триггерам)
-    tools/             # инструменты агента
-    llms/              # LLM провайдеры (deepseek, openai, openai-oauth, anthropic, ollama, lmstudio)
+    loop.ts            # agent loop with tool calling
+    context.ts         # context assembly (system prompt + memory + tools)
+    system-prompt.ts   # system prompt builder
+    memory.ts          # memory with auto-summarization
+    dump.ts            # dumps to ~/.smith/dumps/
+    profiles/          # agent profiles (smith, default)
+    skills/            # skills (detected by triggers)
+    tools/             # agent tools
+    llms/              # LLM providers (deepseek, openai, openai-oauth, anthropic, ollama, lmstudio)
   telegram/
-    mod.ts             # Grammy бот
-    approval.ts        # одобрение опасных тулов (inline-кнопки)
-    contacts.ts        # контакты и группы
-    helpers.ts         # telegram API хелперы
+    mod.ts             # Grammy bot
+    approval.ts        # dangerous tool approval (inline buttons)
+    contacts.ts        # contacts and groups
+    helpers.ts         # telegram API helpers
 ```
