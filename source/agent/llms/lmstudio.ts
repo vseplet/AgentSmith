@@ -3,13 +3,13 @@ import type { ProviderConfig, ProviderSetupField } from "#types";
 import { fetchModels } from "./utils.ts";
 
 export const setupFields: ProviderSetupField[] = [
-  { key: ConfigKey.LMSTUDIO_BASE_URL, label: "LMStudio base URL", secret: false, default: "http://100.107.243.60:1234/v1" },
+  { key: ConfigKey.LMSTUDIO_BASE_URL, label: "LMStudio base URL", secret: false, default: "http://localhost:1234/v1" },
   {
     key: ConfigKey.LMSTUDIO_MODEL_NAME,
     label: "LMStudio model",
     secret: false,
     options: (values) =>
-      fetchModels(values[ConfigKey.LMSTUDIO_BASE_URL] || "http://100.107.243.60:1234/v1", {}),
+      fetchModels(values[ConfigKey.LMSTUDIO_BASE_URL] || "http://localhost:1234/v1", {}),
   },
 ];
 

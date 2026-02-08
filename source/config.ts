@@ -31,7 +31,7 @@ const DEFAULTS: Partial<Record<ConfigKeyType, string>> = {
   [ConfigKey.AGENT_PROFILE]: "smith",
   [ConfigKey.LLM_PROVIDER]: "deepseek",
   [ConfigKey.DEEPSEEK_MODEL_NAME]: "deepseek-chat",
-  [ConfigKey.LMSTUDIO_BASE_URL]: "http://100.107.243.60:1234/v1",
+  [ConfigKey.LMSTUDIO_BASE_URL]: "http://localhost:1234/v1",
   [ConfigKey.OLLAMA_BASE_URL]: "http://localhost:11434/v1",
   [ConfigKey.OPENAI_MODEL_NAME]: "gpt-4o",
   [ConfigKey.ANTHROPIC_MODEL_NAME]: "claude-sonnet-4-20250514",

@@ -1,11 +1,28 @@
+<p align="center">
+  <img src="banner.png" alt="AgentSmith" width="700">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Deno-2+-blue?logo=deno" alt="Deno">
+  <a href="https://github.com/vseplet/AgentSmith"><img src="https://img.shields.io/github/stars/vseplet/AgentSmith?style=flat" alt="Stars"></a>
+</p>
+
 # AgentSmith
 
-A hackable AI agent framework for Telegram. ~4K lines of TypeScript, 6 LLM providers, 15 tools, full agent loop with memory -- and every piece of code is small enough to read and modify in minutes. Clone it, make it yours.
+A hackable AI agent framework for Telegram. ~4K lines of TypeScript, 6 LLM providers, 16 tools, full agent loop with memory -- and every piece of code is small enough to read and modify in minutes. Clone it, make it yours.
 
 ```
 You:   check disk space and tell me if anything is above 80%
 Smith: /dev/sda1 is at 87%, the rest is fine
        Maybe stop hoarding cat pictures, Mr Anderson
+
+You:   what's the weather in tokyo tomorrow?
+Smith: Tokyo: 12C, cloudy, rain in the evening
+       Even the weather weeps for humanity
+
+You:   take a screenshot
+Smith: [approval required: take_screenshot] ✅ Yes / ❌ No
+       *sends screenshot of your desktop*
 ```
 
 ## Why AgentSmith
@@ -16,9 +33,8 @@ This is not a black-box SaaS. It's a starting point -- a minimal, readable codeb
 - **Designed to be extended** -- adding a tool is ~30 lines, a new LLM provider is ~40 lines, a skill is a trigger + a prompt. The architecture stays out of your way
 - **Any LLM** -- DeepSeek, OpenAI, Claude, Ollama, LMStudio, or ChatGPT Plus via OAuth. Switch with one command, or add your own provider
 - **Runs anywhere** -- VPS, Raspberry Pi, NAS, Docker. If it runs Deno, it runs Smith
-- **15 built-in tools** -- shell, web search, process management, weather, crypto rates, system monitoring, code eval, and more
+- **Safe by design** -- dangerous tools (shell, eval, screenshot) require explicit approval via inline buttons. 2-min timeout = auto-deny
 - **Memory** -- remembers conversations, auto-summarizes old context
-- **Safe by design** -- dangerous tools (shell, eval) require explicit approval via inline buttons. 2-min timeout = auto-deny
 - **Owner-only** -- one-time code auth, then only you can talk to your bot
 
 ## Getting Started
@@ -95,11 +111,12 @@ The agent can autonomously decide which tools to use based on your request:
 | `rate_sx` | Crypto exchange rates |
 | `cheat_sh` | Programming cheat sheets |
 | `ifconfig` | Public IP info |
+| `take_screenshot` | Capture screen and send as photo |
 | `telegram_send` | Send messages to Telegram users/groups |
 | `telegram_contacts` | List known contacts |
 | `telegram_groups` | List known groups |
 
-Shell and eval require your approval via inline buttons before execution.
+Tools marked as `dangerous` require your approval via inline buttons before execution.
 
 ## Bot Commands
 
@@ -111,6 +128,34 @@ Shell and eval require your approval via inline buttons before execution.
 | `/context` | Show current context (summary + recent messages) |
 | `/contacts` | List known contacts |
 | `/groups` | List known groups |
+
+## Extend It
+
+**Add a tool** -- one file, one export, register in `tools/mod.ts`:
+
+```ts
+// source/agent/tools/my-tool.ts
+export const myTool: Tool = {
+  name: "my_tool",
+  description: "Does something useful",
+  dangerous: true, // requires owner approval before execution
+  parameters: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Input" },
+    },
+    required: ["query"],
+  },
+  execute: async (args) => {
+    // your logic here
+    return { result: "done" };
+  },
+};
+```
+
+**Add an LLM provider** -- implement `getProviderConfig()` + `setupFields`, register in `llms/mod.ts`. That's it.
+
+**Change personality** -- edit the profile string in `source/agent/profiles/`.
 
 ---
 
