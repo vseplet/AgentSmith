@@ -66,7 +66,6 @@ source/
     ├── moltbook.ts            # Moltbook API
     ├── logsearch.ts           # Поиск по логам
     ├── eval.ts                # Выполнение JS кода
-    ├── glock17.ts             # Glock17 API
     └── http-services.ts       # HTTP сервисы (wttr, rate.sx, cheat.sh)
 ```
 
@@ -186,7 +185,6 @@ deno task check       # Type-check
 | `moltbook`        | Moltbook API                       |
 | `search_history`  | Поиск по логам разговоров          |
 | `eval_js`         | Выполнение JavaScript кода         |
-| `glock17`         | Glock17 API                        |
 | `wttr`            | Погода (wttr.in)                   |
 | `rate_sx`         | Курсы криптовалют (rate.sx)        |
 | `cheat_sh`        | Шпаргалки (cheat.sh)               |

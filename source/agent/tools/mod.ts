@@ -7,7 +7,6 @@ import { webSearchTool } from "./websearch.ts";
 import { moltbookTool } from "./moltbook.ts";
 import { logSearchTool } from "./logsearch.ts";
 import { evalTool } from "./eval.ts";
-import { glock17Tool } from "./glock17.ts";
 import { cheatShTool, rateSxTool, wttrTool, ifconfigTool } from "./http-services.ts";
 import { telegramContactsTool, telegramGroupsTool, telegramSendTool } from "./telegram.ts";
 
@@ -21,7 +20,6 @@ export const TOOLS: Tool[] = [
   moltbookTool,
   logSearchTool,
   evalTool,
-  glock17Tool,
   cheatShTool,
   rateSxTool,
   wttrTool,

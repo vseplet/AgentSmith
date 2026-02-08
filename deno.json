@@ -38,7 +38,6 @@
     "#tools/moltbook": "./source/agent/tools/moltbook.ts",
     "#tools/logsearch": "./source/agent/tools/logsearch.ts",
     "#tools/eval": "./source/agent/tools/eval.ts",
-    "#tools/glock17": "./source/agent/tools/glock17.ts",
     "#tools/http-services": "./source/agent/tools/http-services.ts",
     "#tools/telegram": "./source/agent/tools/telegram.ts"
   }
