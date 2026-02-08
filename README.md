@@ -5,6 +5,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Deno-2+-blue?logo=deno" alt="Deno">
   <a href="https://github.com/vseplet/AgentSmith"><img src="https://img.shields.io/github/stars/vseplet/AgentSmith?style=flat" alt="Stars"></a>
+  <a href="https://t.me/agentsmithdev"><img src="https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram&logoColor=white" alt="Telegram Chat"></a>
 </p>
 
 # AgentSmith
