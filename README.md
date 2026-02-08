@@ -1,12 +1,12 @@
 # AgentSmith
 
-Telegram-бот с LLM-агентом, tool calling и памятью. Deno + DeepSeek/LMStudio.
+Telegram-бот с LLM-агентом, tool calling и памятью. Deno + multi-provider LLM.
 
 ## Требования
 
 - [Deno](https://deno.land/) v2+
 - Telegram Bot Token (через @BotFather)
-- API ключ DeepSeek или запущенный LMStudio
+- API ключ одного из LLM провайдеров или ChatGPT Plus/Pro подписка
 
 ## Быстрый старт
 
@@ -24,15 +24,34 @@ deno task dev
 | Переменная | Описание | По умолчанию |
 |---|---|---|
 | `AGENT_PROFILE` | Профиль агента (`smith`, `default`) | `smith` |
-| `LLM_PROVIDER` | LLM провайдер (`deepseek`, `lmstudio`) | `deepseek` |
+| `LLM_PROVIDER` | LLM провайдер (см. ниже) | `deepseek` |
 | `DEEPSEEK_API_KEY` | API ключ DeepSeek | - |
 | `DEEPSEEK_MODEL_NAME` | Модель DeepSeek | `deepseek-chat` |
+| `OPENAI_API_KEY` | API ключ OpenAI | - |
+| `OPENAI_MODEL_NAME` | Модель OpenAI | `gpt-4o` |
+| `ANTHROPIC_API_KEY` | API ключ Anthropic | - |
+| `ANTHROPIC_MODEL_NAME` | Модель Anthropic | `claude-sonnet-4-20250514` |
 | `LMSTUDIO_BASE_URL` | URL LMStudio API | `http://100.107.243.60:1234/v1` |
 | `LMSTUDIO_MODEL_NAME` | Модель LMStudio | - |
+| `OLLAMA_BASE_URL` | URL Ollama API | `http://localhost:11434/v1` |
+| `OLLAMA_MODEL_NAME` | Модель Ollama | - |
 | `TELEGRAM_BOT_API_KEY` | Токен Telegram бота | - |
 | `TELEGRAM_USER_ID` | ID владельца бота | - |
 | `TELEGRAM_CODE` | Код авторизации | - |
 | `MOLTBOOK_API_KEY` | API ключ Moltbook | - |
+
+### LLM провайдеры
+
+| Провайдер | API | Аутентификация |
+|---|---|---|
+| `deepseek` | Chat Completions | API key |
+| `openai` | Chat Completions | API key |
+| `openai-oauth` | Responses API (SSE) | ChatGPT Plus/Pro OAuth |
+| `anthropic` | Chat Completions | API key |
+| `ollama` | Chat Completions | - |
+| `lmstudio` | Chat Completions | - |
+
+Провайдер `openai-oauth` использует OAuth PKCE через `auth.openai.com` и работает через `chatgpt.com/backend-api/codex`. Для настройки: `smith setup llm` → выбрать `openai-oauth`.
 
 ## Привязка владельца
 
@@ -108,7 +127,7 @@ docker compose up -d --build   # пересборка после изменен�
 `chat()` запускает цикл до `MAX_STEPS=10` итераций:
 
 ```
-resolveProvider() → выбор провайдера (deepseek/lmstudio) из конфига
+resolveProvider() → выбор провайдера из конфига
 buildContext()    → сборка messages + tools
                     │
                     ▼
@@ -129,7 +148,7 @@ buildContext()    → сборка messages + tools
 
 ### Запрос к LLM API
 
-Все провайдеры используют OpenAI-совместимый эндпоинт `POST /chat/completions`.
+Большинство провайдеров используют OpenAI-совместимый эндпоинт `POST /chat/completions`. Провайдер `openai-oauth` использует Responses API (`POST /responses`) через SSE-стриминг.
 
 Тело запроса:
 
@@ -184,7 +203,7 @@ source/
     profiles/          # профили агента (smith, default)
     skills/            # навыки (детектятся по триггерам)
     tools/             # инструменты агента
-    llms/              # LLM провайдеры (deepseek, lmstudio)
+    llms/              # LLM провайдеры (deepseek, openai, openai-oauth, anthropic, ollama, lmstudio)
   telegram/
     mod.ts             # Grammy бот
     contacts.ts        # контакты и группы

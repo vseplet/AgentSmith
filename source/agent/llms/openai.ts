@@ -1,4 +1,3 @@
-import { Secret } from "@cliffy/prompt";
 import {
   getOpenAIApiKey,
   getOpenAIModelName,

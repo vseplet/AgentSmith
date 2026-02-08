@@ -1,9 +1,7 @@
 import fetchify from "@vseplet/fetchify";
 import * as v from "@valibot/valibot";
 import { getLLMProvider } from "#config";
-import type { CompletionResult, Message, ProviderConfig, ToolCall, ToolPayload } from "#types";
-
-import type { ProviderSetupField } from "#types";
+import type { CompletionResult, Message, ProviderConfig, ProviderSetupField, ToolPayload } from "#types";
 import { getProviderConfig as getDeepSeekConfig, setupFields as deepseekFields } from "./deepseek.ts";
 import { getProviderConfig as getLMStudioConfig, setupFields as lmstudioFields } from "./lmstudio.ts";
 import { getProviderConfig as getOllamaConfig, setupFields as ollamaFields } from "./ollama.ts";
