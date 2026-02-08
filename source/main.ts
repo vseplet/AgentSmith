@@ -1,1 +1,1 @@
-import "./cli/mod.ts";
+import "./core/cli/mod.ts";

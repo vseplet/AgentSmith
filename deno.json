@@ -19,27 +19,9 @@
     "@std/fs": "jsr:@std/fs@^1",
     "@std/path": "jsr:@std/path@^1",
 
-    "#common": "./source/common.ts",
-    "#types": "./source/types.ts",
-    "#config": "./source/config.ts",
-    "#llm": "./source/agent/llms/mod.ts",
-    "#agent": "./source/agent/loop.ts",
-    "#memory": "./source/agent/memory.ts",
-    "#logger": "./source/agent/dump.ts",
-    "#skills": "./source/agent/skills/mod.ts",
-    "#tgbot": "./source/telegram/mod.ts",
-    "#tgbot/approval": "./source/telegram/approval.ts",
-    "#tgbot/contacts": "./source/telegram/contacts.ts",
-    "#tools/uptime": "./source/agent/tools/uptime.ts",
-    "#tools/system": "./source/agent/tools/system.ts",
-    "#tools/ps": "./source/agent/tools/ps.ts",
-    "#tools/claude": "./source/agent/tools/claude.ts",
-    "#tools/websearch": "./source/agent/tools/websearch.ts",
-    "#tools/moltbook": "./source/agent/tools/moltbook.ts",
-    "#tools/logsearch": "./source/agent/tools/logsearch.ts",
-    "#tools/eval": "./source/agent/tools/eval.ts",
-    "#tools/http-services": "./source/agent/tools/http-services.ts",
-    "#tools/telegram": "./source/agent/tools/telegram.ts",
-    "#tools/screenshot": "./source/agent/tools/screenshot.ts"
+    "$/core/": "./source/core/",
+    "$/profiles": "./source/profiles/mod.ts",
+    "$/tools": "./source/tools/mod.ts",
+    "$/skills": "./source/skills/mod.ts"
   }
 }

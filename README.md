@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/Deno-2+-blue?logo=deno" alt="Deno">
   <a href="https://github.com/vseplet/AgentSmith"><img src="https://img.shields.io/github/stars/vseplet/AgentSmith?style=flat" alt="Stars"></a>
   <a href="https://t.me/agentsmithdev"><img src="https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram&logoColor=white" alt="Telegram Chat"></a>
+  <a href="https://github.com/vseplet/AgentSmith/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License"></a>
 </p>
 
 # AgentSmith
@@ -249,29 +250,29 @@ Before executing `run_shell_command` or `eval_code`, the bot edits the progress 
 
 ```
 source/
-  main.ts              # entry point
-  types.ts             # types and interfaces
-  config.ts            # configuration (ENV + KV)
-  common.ts            # shibui core + Deno KV singleton
-  cli/
-    mod.ts             # CLI wiring (Cliffy commands)
-    commands/
-      run.ts           # start agent + bot (default action)
-      config.ts        # show configuration
-      setup.ts         # interactive setup wizard
-  agent/
-    loop.ts            # agent loop with tool calling
-    context.ts         # context assembly (system prompt + memory + tools)
-    system-prompt.ts   # system prompt builder
-    memory.ts          # memory with auto-summarization
-    dump.ts            # dumps to ~/.smith/dumps/
-    profiles/          # agent profiles (smith, default)
-    skills/            # skills (detected by triggers)
-    tools/             # agent tools
-    llms/              # LLM providers (deepseek, openai, openai-oauth, anthropic, ollama, lmstudio)
-  telegram/
-    mod.ts             # Grammy bot
-    approval.ts        # dangerous tool approval (inline buttons)
-    contacts.ts        # contacts and groups
-    helpers.ts         # telegram API helpers
+  main.ts                # entry point
+  core/
+    types.ts             # types and interfaces
+    config.ts            # configuration (ENV + KV)
+    common.ts            # shibui core + Deno KV singleton
+    loop.ts              # agent loop with tool calling
+    context.ts           # context assembly (system prompt + memory + tools)
+    system-prompt.ts     # system prompt builder
+    memory.ts            # memory with auto-summarization
+    dump.ts              # dumps to ~/.smith/dumps/
+    llms/                # LLM providers (deepseek, openai, openai-oauth, anthropic, ollama, lmstudio)
+    telegram/
+      mod.ts             # Grammy bot
+      approval.ts        # dangerous tool approval (inline buttons)
+      contacts.ts        # contacts and groups
+      helpers.ts         # telegram API helpers
+    cli/
+      mod.ts             # CLI wiring (Cliffy commands)
+      commands/
+        run.ts           # start agent + bot (default action)
+        config.ts        # show configuration
+        setup.ts         # interactive setup wizard
+  tools/                 # agent tools (~30 lines each)
+  profiles/              # agent profiles (smith, default)
+  skills/                # skills (detected by triggers)
 ```
