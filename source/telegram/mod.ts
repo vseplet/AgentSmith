@@ -11,6 +11,9 @@ import { clearMemory, getMemory } from "#memory";
 import { replyOptions } from "./helpers.ts";
 import { getAllContacts, getAllGroups, upsertContact, upsertGroup } from "./contacts.ts";
 import type { ReactionEmoji } from "#types";
+import { handleApprovalCallback, registerBot } from "./approval.ts";
+
+export { requestApproval } from "./approval.ts";
 
 let bot: Bot | null = null;
 
@@ -86,6 +89,22 @@ export async function startBot(): Promise<void> {
   }
 
   bot = new Bot(token);
+  registerBot(bot);
+
+  // Handle approval inline button callbacks
+  bot.on("callback_query:data", async (ctx) => {
+    const data = ctx.callbackQuery.data;
+    if (data.startsWith("approve:") || data.startsWith("deny:")) {
+      const approved = data.startsWith("approve:");
+      const callbackId = data.split(":").slice(1).join(":");
+      const handled = handleApprovalCallback(callbackId, approved);
+      await ctx.answerCallbackQuery({
+        text: handled
+          ? (approved ? "✅ Approved" : "❌ Denied")
+          : "⏰ Expired",
+      });
+    }
+  });
 
   bot.command("start", (ctx) => {
     ctx.reply("Hello! I'm AgentSmith bot.", replyOptions(ctx));

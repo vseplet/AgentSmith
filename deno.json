@@ -28,6 +28,7 @@
     "#logger": "./source/agent/dump.ts",
     "#skills": "./source/agent/skills/mod.ts",
     "#tgbot": "./source/telegram/mod.ts",
+    "#tgbot/approval": "./source/telegram/approval.ts",
     "#tgbot/contacts": "./source/telegram/contacts.ts",
     "#tools/uptime": "./source/agent/tools/uptime.ts",
     "#tools/system": "./source/agent/tools/system.ts",

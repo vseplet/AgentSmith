@@ -1,6 +1,6 @@
 import { pot, task } from "@vseplet/shibui";
 import { core } from "#common";
-import { editMessage, sendReply, setReaction } from "#tgbot";
+import { editMessage, requestApproval, sendReply, setReaction } from "#tgbot";
 import { complete, resolveProvider, summarize } from "#llm";
 import { buildContext } from "./context.ts";
 import { addToMemory, summarizeMemory } from "#memory";
@@ -12,6 +12,7 @@ import type { ChatResult, ProgressCallback, TokenStats } from "#types";
 // ============================================
 
 const MAX_STEPS = 10;
+const DANGEROUS_TOOLS = new Set(["run_shell_command", "eval_code"]);
 
 function shortResult(result: unknown): string {
   const str = JSON.stringify(result);
@@ -23,6 +24,7 @@ async function chat(
   maxSteps: number,
   chatId?: number,
   onProgress?: ProgressCallback,
+  progressMessageId?: number,
 ): Promise<ChatResult> {
   const provider = await resolveProvider();
   console.log(`[Agent] Provider: ${provider.name}, Model: ${provider.model}`);
@@ -100,6 +102,35 @@ async function chat(
 
         try {
           const args = JSON.parse(toolCall.function.arguments);
+
+          // Check approval for dangerous tools
+          if (chatId && DANGEROUS_TOOLS.has(toolName)) {
+            const approved = await requestApproval(
+              chatId,
+              toolName,
+              toolCall.function.arguments,
+              progressMessageId,
+            );
+            if (!approved) {
+              const denyResult = JSON.stringify({
+                denied: "Tool execution denied by user",
+              });
+              messages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: denyResult,
+              });
+              if (onProgress) {
+                progressLog[progressLog.length - 1] =
+                  `🚫 ${toolName}: denied by user`;
+                await onProgress(
+                  `Step ${step + 1}/${maxSteps}\n\n${progressLog.join("\n")}`,
+                );
+              }
+              continue;
+            }
+          }
+
           const execResult = await tool.execute(args);
           const resultStr = JSON.stringify(execResult);
           messages.push({
@@ -201,7 +232,7 @@ const handleMessage = task(TelegramMessage)
 
       const userPrompt = username ? `[User: ${username}]\n${text}` : text;
       const startTime = Date.now();
-      const result = await chat(userPrompt, MAX_STEPS, chatId, onProgress);
+      const result = await chat(userPrompt, MAX_STEPS, chatId, onProgress, replyId);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       const { text: response, tokens } = result;
