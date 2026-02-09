@@ -1,19 +1,13 @@
 import fetchify from "@vseplet/fetchify";
 import * as v from "@valibot/valibot";
-import { getLLMProvider } from "$/core/config.ts";
-import type { CompletionResult, Message, ProviderConfig, ProviderSetupField, ToolPayload } from "$/core/types.ts";
+import { cfg } from "$/core/config.ts";
+import type { CompletionResult, Message, ProviderConfig, ProviderEntry, ProviderSetupField, ToolPayload } from "$/core/types.ts";
 import { getProviderConfig as getDeepSeekConfig, setupFields as deepseekFields } from "./deepseek.ts";
 import { getProviderConfig as getLMStudioConfig, setupFields as lmstudioFields } from "./lmstudio.ts";
 import { getProviderConfig as getOllamaConfig, setupFields as ollamaFields } from "./ollama.ts";
 import { getProviderConfig as getOpenAIConfig, setupFields as openaiFields } from "./openai.ts";
 import { getProviderConfig as getAnthropicConfig, setupFields as anthropicFields } from "./anthropic.ts";
 import { getProviderConfig as getOpenAIOAuthConfig, setupFields as openaiOauthFields, complete as openaiOauthComplete } from "./openai-oauth.ts";
-
-interface ProviderEntry {
-  getConfig: () => Promise<ProviderConfig>;
-  setupFields: ProviderSetupField[];
-  complete?: (messages: Message[], tools?: ToolPayload[]) => Promise<CompletionResult | null>;
-}
 
 const PROVIDERS: Record<string, ProviderEntry> = {
   deepseek: { getConfig: getDeepSeekConfig, setupFields: deepseekFields },
@@ -35,7 +29,7 @@ export function getProviderSetupFields(name: string): ProviderSetupField[] {
 }
 
 export async function resolveProvider(): Promise<ProviderConfig> {
-  const providerName = (await getLLMProvider()) ?? "deepseek";
+  const providerName = cfg("llm.provider") ?? "deepseek";
   const entry = PROVIDERS[providerName];
   if (!entry) {
     const available = Object.keys(PROVIDERS).join(", ");
@@ -107,7 +101,7 @@ export async function complete(
   tools?: ToolPayload[],
   provider?: ProviderConfig,
 ): Promise<CompletionResult> {
-  const providerName = provider?.name ?? (await getLLMProvider()) ?? "deepseek";
+  const providerName = provider?.name ?? cfg("llm.provider") ?? "deepseek";
 
   // Check if the provider has a custom complete (e.g. OpenAI OAuth → Responses API)
   const entry = PROVIDERS[providerName];

@@ -1,21 +1,21 @@
-import { getOllamaBaseURL, getOllamaModelName, ConfigKey } from "$/core/config.ts";
+import { cfg } from "$/core/config.ts";
 import type { ProviderConfig, ProviderSetupField } from "$/core/types.ts";
 import { fetchModels } from "./utils.ts";
 
 export const setupFields: ProviderSetupField[] = [
-  { key: ConfigKey.OLLAMA_BASE_URL, label: "Ollama base URL", secret: false, default: "http://localhost:11434/v1" },
+  { key: "llm.ollama.baseUrl", label: "Ollama base URL", secret: false, default: "http://localhost:11434/v1" },
   {
-    key: ConfigKey.OLLAMA_MODEL_NAME,
+    key: "llm.ollama.model",
     label: "Ollama model",
     secret: false,
     options: (values) =>
-      fetchModels(values[ConfigKey.OLLAMA_BASE_URL] || "http://localhost:11434/v1", {}),
+      fetchModels(values["llm.ollama.baseUrl"] || "http://localhost:11434/v1", {}),
   },
 ];
 
 export async function getProviderConfig(): Promise<ProviderConfig> {
-  const baseURL = (await getOllamaBaseURL()) ?? "http://localhost:11434/v1";
-  const model = (await getOllamaModelName()) ?? "llama3";
+  const baseURL = cfg("llm.ollama.baseUrl") ?? "http://localhost:11434/v1";
+  const model = cfg("llm.ollama.model") ?? "llama3";
 
   return {
     name: "ollama",

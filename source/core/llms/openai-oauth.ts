@@ -1,10 +1,4 @@
-import {
-  getChatGPTRefreshToken,
-  getOpenAIApiKey,
-  getOpenAIModelName,
-  setConfigValue,
-} from "$/core/config.ts";
-import { ConfigKey } from "$/core/types.ts";
+import { cfg, setCfg } from "$/core/config.ts";
 import type {
   CompletionResult,
   Message,
@@ -113,9 +107,9 @@ async function refreshAccessToken(refreshToken: string): Promise<string> {
 
   const data = await res.json() as OAuthTokens;
 
-  await setConfigValue(ConfigKey.OPENAI_API_KEY, data.access_token);
+  await setCfg("llm.openai.apiKey", data.access_token);
   if (data.refresh_token) {
-    await setConfigValue(ConfigKey.CHATGPT_REFRESH_TOKEN, data.refresh_token);
+    await setCfg("llm.chatgpt.refreshToken", data.refresh_token);
   }
 
   return data.access_token;
@@ -186,9 +180,9 @@ async function performOAuthFlow(): Promise<OAuthTokens> {
     const code = await codePromise;
     const tokens = await exchangeCode(code, codeVerifier);
 
-    await setConfigValue(ConfigKey.OPENAI_API_KEY, tokens.access_token);
+    await setCfg("llm.openai.apiKey", tokens.access_token);
     if (tokens.refresh_token) {
-      await setConfigValue(ConfigKey.CHATGPT_REFRESH_TOKEN, tokens.refresh_token);
+      await setCfg("llm.chatgpt.refreshToken", tokens.refresh_token);
     }
 
     return tokens;
@@ -212,7 +206,7 @@ const CHATGPT_MODELS = [
 
 export const setupFields: ProviderSetupField[] = [
   {
-    key: ConfigKey.OPENAI_API_KEY,
+    key: "llm.openai.apiKey",
     label: "ChatGPT authentication",
     secret: true,
     resolve: async () => {
@@ -221,7 +215,7 @@ export const setupFields: ProviderSetupField[] = [
     },
   },
   {
-    key: ConfigKey.OPENAI_MODEL_NAME,
+    key: "llm.openai.model",
     label: "ChatGPT model",
     secret: false,
     default: "gpt-5.2-codex",
@@ -234,10 +228,10 @@ export const setupFields: ProviderSetupField[] = [
 // ============================================
 
 export async function getProviderConfig(): Promise<ProviderConfig> {
-  let apiKey = await getOpenAIApiKey();
+  let apiKey = cfg("llm.openai.apiKey");
   if (!apiKey) throw new Error("ChatGPT not configured, run: smith setup llm");
 
-  const refreshToken = await getChatGPTRefreshToken();
+  const refreshToken = cfg("llm.chatgpt.refreshToken");
   if (refreshToken) {
     try {
       apiKey = await refreshAccessToken(refreshToken);
@@ -246,7 +240,7 @@ export async function getProviderConfig(): Promise<ProviderConfig> {
     }
   }
 
-  const model = (await getOpenAIModelName()) ?? "gpt-5.2-codex";
+  const model = cfg("llm.openai.model") ?? "gpt-5.2-codex";
 
   return {
     name: "openai-oauth",

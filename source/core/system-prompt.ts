@@ -1,10 +1,10 @@
 import { buildSkillsPrompt, detectSkills } from "$/skills";
-import { getAgentProfile } from "$/core/config.ts";
+import { cfg } from "$/core/config.ts";
 import { PROFILES } from "$/profiles";
 import { log } from "$/core/logger.ts";
 
 export async function buildSystemPrompt(userText: string): Promise<string> {
-  const profileName = (await getAgentProfile()) ?? "smith";
+  const profileName = cfg("agent.profile") ?? "smith";
   const profile = PROFILES[profileName] ?? PROFILES["smith"];
 
   log.agent.inf(`Profile: ${profileName}`);

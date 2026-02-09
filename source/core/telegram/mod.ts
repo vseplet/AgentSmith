@@ -1,11 +1,5 @@
 import { Bot, InputFile } from "grammy";
-import {
-  getAllConfig,
-  getTelegramBotApiKey,
-  getTelegramCode,
-  getTelegramUserId,
-  setTelegramUserId,
-} from "$/core/config.ts";
+import { allConfig, cfg, setCfg } from "$/core/config.ts";
 import { sendTelegramMessage } from "$/core/loop.ts";
 import { clearMemory, getMemory } from "$/core/memory.ts";
 import { log } from "$/core/logger.ts";
@@ -98,7 +92,7 @@ export async function setReaction(
 }
 
 export async function startBot(): Promise<void> {
-  const token = await getTelegramBotApiKey();
+  const token = cfg("telegram.botApiKey");
 
   if (!token) {
     throw new Error("TELEGRAM_BOT_API_KEY is not set");
@@ -145,7 +139,7 @@ export async function startBot(): Promise<void> {
       return;
     }
 
-    const storedCode = await getTelegramCode();
+    const storedCode = cfg("telegram.code");
 
     if (!storedCode) {
       ctx.reply("No code configured.", replyOptions(ctx));
@@ -155,7 +149,7 @@ export async function startBot(): Promise<void> {
     if (inputCode === storedCode) {
       const userId = ctx.from?.id.toString();
       if (userId) {
-        await setTelegramUserId(userId);
+        await setCfg("telegram.userId", userId);
         ctx.reply("You are now registered as the owner.", replyOptions(ctx));
       }
     } else {
@@ -164,7 +158,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("config", async (ctx) => {
-    const ownerId = await getTelegramUserId();
+    const ownerId = cfg("telegram.userId");
     const userId = ctx.from?.id.toString();
 
     if (!ownerId || userId !== ownerId) {
@@ -175,26 +169,26 @@ export async function startBot(): Promise<void> {
       return;
     }
 
-    const config = await getAllConfig();
+    const config = allConfig();
 
     const mask = (value: string | null) =>
       value ? value.slice(0, 4) + "****" : "not set";
 
     const lines = [
       "Config:",
-      `DEEPSEEK_API_KEY: ${mask(config.deepseek_api_key)}`,
-      `DEEPSEEK_MODEL_NAME: ${config.deepseek_model_name ?? "not set"}`,
-      `TELEGRAM_BOT_API_KEY: ${mask(config.telegram_bot_api_key)}`,
-      `TELEGRAM_CODE: ${mask(config.telegram_code)}`,
-      `TELEGRAM_USER_ID: ${config.telegram_user_id ?? "not set"}`,
-      `MOLTBOOK_API_KEY: ${mask(config.moltbook_api_key)}`,
+      `llm.deepseek.apiKey: ${mask(config["llm.deepseek.apiKey"])}`,
+      `llm.deepseek.model: ${config["llm.deepseek.model"] ?? "not set"}`,
+      `telegram.botApiKey: ${mask(config["telegram.botApiKey"])}`,
+      `telegram.code: ${mask(config["telegram.code"])}`,
+      `telegram.userId: ${config["telegram.userId"] ?? "not set"}`,
+      `moltbook.apiKey: ${mask(config["moltbook.apiKey"])}`,
     ];
 
     ctx.reply(lines.join("\n"), replyOptions(ctx));
   });
 
   bot.command("clear", async (ctx) => {
-    const ownerId = await getTelegramUserId();
+    const ownerId = cfg("telegram.userId");
     const userId = ctx.from?.id.toString();
 
     if (!ownerId || userId !== ownerId) {
@@ -207,7 +201,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("context", async (ctx) => {
-    const ownerId = await getTelegramUserId();
+    const ownerId = cfg("telegram.userId");
     const userId = ctx.from?.id.toString();
 
     if (!ownerId || userId !== ownerId) {
@@ -238,7 +232,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("contacts", async (ctx) => {
-    const ownerId = await getTelegramUserId();
+    const ownerId = cfg("telegram.userId");
     const userId = ctx.from?.id.toString();
 
     if (!ownerId || userId !== ownerId) {
@@ -261,7 +255,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("groups", async (ctx) => {
-    const ownerId = await getTelegramUserId();
+    const ownerId = cfg("telegram.userId");
     const userId = ctx.from?.id.toString();
 
     if (!ownerId || userId !== ownerId) {
@@ -298,7 +292,7 @@ export async function startBot(): Promise<void> {
 
     // Save group info if message is from a group
     const chatType = ctx.chat.type;
-    if (chatType === "group" || chatType === "supergroup" || chatType === "channel") {
+    if (chatType === "group" || chatType === "supergroup" || (chatType as string) === "channel") {
       await upsertGroup({
         id: ctx.chat.id,
         title: "title" in ctx.chat ? ctx.chat.title : undefined,
@@ -308,7 +302,7 @@ export async function startBot(): Promise<void> {
     }
 
     // Check owner access
-    const ownerId = await getTelegramUserId();
+    const ownerId = cfg("telegram.userId");
     const userId = ctx.from?.id.toString();
 
     if (!ownerId || userId !== ownerId) {

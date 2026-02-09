@@ -1,25 +1,25 @@
-import { getDeepSeekApiKey, getDeepSeekModelName, ConfigKey } from "$/core/config.ts";
+import { cfg } from "$/core/config.ts";
 import type { ProviderConfig, ProviderSetupField } from "$/core/types.ts";
 import { fetchModels } from "./utils.ts";
 
 export const setupFields: ProviderSetupField[] = [
-  { key: ConfigKey.DEEPSEEK_API_KEY, label: "DeepSeek API Key", secret: true },
+  { key: "llm.deepseek.apiKey", label: "DeepSeek API Key", secret: true },
   {
-    key: ConfigKey.DEEPSEEK_MODEL_NAME,
+    key: "llm.deepseek.model",
     label: "DeepSeek model",
     secret: false,
     default: "deepseek-chat",
     options: (values) =>
       fetchModels("https://api.deepseek.com", {
-        Authorization: `Bearer ${values[ConfigKey.DEEPSEEK_API_KEY]}`,
+        Authorization: `Bearer ${values["llm.deepseek.apiKey"]}`,
       }),
   },
 ];
 
 export async function getProviderConfig(): Promise<ProviderConfig> {
-  const apiKey = await getDeepSeekApiKey();
+  const apiKey = cfg("llm.deepseek.apiKey");
   if (!apiKey) throw new Error("DEEPSEEK_API_KEY not set");
-  const model = (await getDeepSeekModelName()) ?? "deepseek-chat";
+  const model = cfg("llm.deepseek.model") ?? "deepseek-chat";
 
   return {
     name: "deepseek",

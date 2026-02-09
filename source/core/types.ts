@@ -56,12 +56,18 @@ export interface ProviderConfig {
 }
 
 export interface ProviderSetupField {
-  key: ConfigKeyType;
+  key: string;
   label: string;
   secret: boolean;
   default?: string;
   options?: (values: Record<string, string>) => Promise<string[]>;
   resolve?: (values: Record<string, string>) => Promise<string>;
+}
+
+export interface ProviderEntry {
+  getConfig: () => Promise<ProviderConfig>;
+  setupFields: ProviderSetupField[];
+  complete?: (messages: Message[], tools?: ToolPayload[]) => Promise<CompletionResult | null>;
 }
 
 export interface CompletionResult {
@@ -122,52 +128,6 @@ export interface MemoryMessage {
 export interface Memory {
   messages: MemoryMessage[];
   summary: string | null;
-}
-
-// ============================================
-// Config Types
-// ============================================
-
-export const ConfigKey = {
-  AGENT_PROFILE: "agent_profile",
-  LLM_PROVIDER: "llm_provider",
-  DEEPSEEK_API_KEY: "deepseek_api_key",
-  DEEPSEEK_MODEL_NAME: "deepseek_model_name",
-  LMSTUDIO_BASE_URL: "lmstudio_base_url",
-  LMSTUDIO_MODEL_NAME: "lmstudio_model_name",
-  OLLAMA_BASE_URL: "ollama_base_url",
-  OLLAMA_MODEL_NAME: "ollama_model_name",
-  OPENAI_API_KEY: "openai_api_key",
-  OPENAI_MODEL_NAME: "openai_model_name",
-  CHATGPT_REFRESH_TOKEN: "chatgpt_refresh_token",
-  ANTHROPIC_API_KEY: "anthropic_api_key",
-  ANTHROPIC_MODEL_NAME: "anthropic_model_name",
-  TELEGRAM_BOT_API_KEY: "telegram_bot_api_key",
-  TELEGRAM_USER_ID: "telegram_user_id",
-  TELEGRAM_CODE: "telegram_code",
-  MOLTBOOK_API_KEY: "moltbook_api_key",
-} as const;
-
-export type ConfigKeyType = typeof ConfigKey[keyof typeof ConfigKey];
-
-export interface Config {
-  [ConfigKey.AGENT_PROFILE]: string | null;
-  [ConfigKey.LLM_PROVIDER]: string | null;
-  [ConfigKey.DEEPSEEK_API_KEY]: string | null;
-  [ConfigKey.DEEPSEEK_MODEL_NAME]: string | null;
-  [ConfigKey.LMSTUDIO_BASE_URL]: string | null;
-  [ConfigKey.LMSTUDIO_MODEL_NAME]: string | null;
-  [ConfigKey.OLLAMA_BASE_URL]: string | null;
-  [ConfigKey.OLLAMA_MODEL_NAME]: string | null;
-  [ConfigKey.OPENAI_API_KEY]: string | null;
-  [ConfigKey.OPENAI_MODEL_NAME]: string | null;
-  [ConfigKey.CHATGPT_REFRESH_TOKEN]: string | null;
-  [ConfigKey.ANTHROPIC_API_KEY]: string | null;
-  [ConfigKey.ANTHROPIC_MODEL_NAME]: string | null;
-  [ConfigKey.TELEGRAM_BOT_API_KEY]: string | null;
-  [ConfigKey.TELEGRAM_USER_ID]: string | null;
-  [ConfigKey.TELEGRAM_CODE]: string | null;
-  [ConfigKey.MOLTBOOK_API_KEY]: string | null;
 }
 
 // ============================================

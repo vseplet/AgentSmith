@@ -1,5 +1,5 @@
 import type { Tool } from "$/core/types.ts";
-import { getMoltbookApiKey, setMoltbookApiKey } from "$/core/config.ts";
+import { cfg, setCfg } from "$/core/config.ts";
 import { log } from "$/core/logger.ts";
 
 const BASE_URL = "https://www.moltbook.com/api/v1";
@@ -8,7 +8,7 @@ async function moltbookFetch(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<unknown> {
-  const apiKey = await getMoltbookApiKey();
+  const apiKey = cfg("moltbook.apiKey");
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -298,7 +298,7 @@ Actions:
 
     // Allow setting API key
     if (args.api_key) {
-      await setMoltbookApiKey(args.api_key as string);
+      await setCfg("moltbook.apiKey", args.api_key as string);
     }
 
     switch (action) {
@@ -320,7 +320,7 @@ Actions:
 
         // Store API key if registration successful
         if (result && typeof result === "object" && "api_key" in result) {
-          await setMoltbookApiKey((result as { api_key: string }).api_key);
+          await setCfg("moltbook.apiKey", (result as { api_key: string }).api_key);
         }
 
         return result;
@@ -334,7 +334,7 @@ Actions:
       }
 
       case "post": {
-        const apiKey = await getMoltbookApiKey();
+        const apiKey = cfg("moltbook.apiKey");
         if (!apiKey) {
           return {
             error: "Not authenticated. Register first or provide api_key.",
@@ -395,7 +395,7 @@ Actions:
       }
 
       case "verify": {
-        const apiKey = await getMoltbookApiKey();
+        const apiKey = cfg("moltbook.apiKey");
         if (!apiKey) {
           return {
             error: "Not authenticated. Register first or provide api_key.",
@@ -418,7 +418,7 @@ Actions:
       }
 
       case "comment": {
-        const apiKey = await getMoltbookApiKey();
+        const apiKey = cfg("moltbook.apiKey");
         if (!apiKey) {
           return {
             error: "Not authenticated. Register first or provide api_key.",
@@ -477,7 +477,7 @@ Actions:
       }
 
       case "vote": {
-        const apiKey = await getMoltbookApiKey();
+        const apiKey = cfg("moltbook.apiKey");
         if (!apiKey) {
           return {
             error: "Not authenticated. Register first or provide api_key.",
@@ -512,7 +512,7 @@ Actions:
       }
 
       case "profile": {
-        const apiKey = await getMoltbookApiKey();
+        const apiKey = cfg("moltbook.apiKey");
         if (!apiKey) {
           return {
             error: "Not authenticated. Register first or provide api_key.",

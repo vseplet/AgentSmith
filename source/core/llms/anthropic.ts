@@ -1,26 +1,26 @@
-import { getAnthropicApiKey, getAnthropicModelName, ConfigKey } from "$/core/config.ts";
+import { cfg } from "$/core/config.ts";
 import type { ProviderConfig, ProviderSetupField } from "$/core/types.ts";
 import { fetchModels } from "./utils.ts";
 
 export const setupFields: ProviderSetupField[] = [
-  { key: ConfigKey.ANTHROPIC_API_KEY, label: "Anthropic API Key", secret: true },
+  { key: "llm.anthropic.apiKey", label: "Anthropic API Key", secret: true },
   {
-    key: ConfigKey.ANTHROPIC_MODEL_NAME,
+    key: "llm.anthropic.model",
     label: "Anthropic model",
     secret: false,
     default: "claude-sonnet-4-20250514",
     options: (values) =>
       fetchModels("https://api.anthropic.com/v1", {
-        "x-api-key": values[ConfigKey.ANTHROPIC_API_KEY],
+        "x-api-key": values["llm.anthropic.apiKey"],
         "anthropic-version": "2023-06-01",
       }),
   },
 ];
 
 export async function getProviderConfig(): Promise<ProviderConfig> {
-  const apiKey = await getAnthropicApiKey();
+  const apiKey = cfg("llm.anthropic.apiKey");
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
-  const model = (await getAnthropicModelName()) ?? "claude-sonnet-4-20250514";
+  const model = cfg("llm.anthropic.model") ?? "claude-sonnet-4-20250514";
 
   return {
     name: "anthropic",

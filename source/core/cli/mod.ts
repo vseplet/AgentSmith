@@ -1,6 +1,7 @@
 import { Command } from "@cliffy/command";
 import { ensureDir } from "@std/fs/ensure-dir";
 import { join } from "@std/path/join";
+import { loadConfig } from "$/core/config.ts";
 import { run } from "./commands/run.ts";
 import { showConfig } from "./commands/config.ts";
 import { runSetup, setupLLM, setupProfile, setupTelegram } from "./commands/setup.ts";
@@ -14,6 +15,7 @@ async function ensureSmithDirs(): Promise<void> {
 }
 
 await ensureSmithDirs();
+await loadConfig();
 
 await new Command()
   .name("smith")

@@ -1,5 +1,5 @@
 import type { Tool } from "$/core/types.ts";
-import { getTelegramUserId } from "$/core/config.ts";
+import { cfg } from "$/core/config.ts";
 
 export const screenshotTool: Tool = {
   name: "take_screenshot",
@@ -35,7 +35,7 @@ export const screenshotTool: Tool = {
       // Resolve chat ID
       let chatId = args.chat_id as number | undefined;
       if (!chatId) {
-        const ownerId = await getTelegramUserId();
+        const ownerId = cfg("telegram.userId");
         if (ownerId) chatId = Number(ownerId);
       }
       if (!chatId) {

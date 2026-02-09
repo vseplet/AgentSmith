@@ -1,108 +1,65 @@
 import { assertEquals } from "@std/assert";
-import {
-  closeKv,
-  ConfigKey,
-  deleteConfigValue,
-  getKvValue,
-  setConfigValue,
-  setDeepSeekApiKey,
-  setDeepSeekModelName,
-  setTelegramBotApiKey,
-} from "../source/config/mod.ts";
+import { cfg, loadConfig, setCfg } from "$/core/config.ts";
+import { getKv } from "$/core/common.ts";
 
 Deno.test({
-  name: "Config: set and get DeepSeek API key in KV",
+  name: "Config: setCfg and cfg round-trip",
   async fn() {
+    await loadConfig();
+
     const testKey = "test-deepseek-key-123";
-    await setDeepSeekApiKey(testKey);
-    const result = await getKvValue(ConfigKey.DEEPSEEK_API_KEY);
-    assertEquals(result, testKey);
-    await deleteConfigValue(ConfigKey.DEEPSEEK_API_KEY);
+    await setCfg("llm.deepseek.apiKey", testKey);
+    assertEquals(cfg("llm.deepseek.apiKey"), testKey);
+
+    // cleanup
+    const store = await getKv();
+    await store.delete(["config", "llm.deepseek.apiKey"]);
   },
   sanitizeResources: false,
   sanitizeOps: false,
 });
 
 Deno.test({
-  name: "Config: set and get DeepSeek model name in KV",
+  name: "Config: setCfg and cfg for model name",
   async fn() {
-    const testModel = "deepseek-chat";
-    await setDeepSeekModelName(testModel);
-    const result = await getKvValue(ConfigKey.DEEPSEEK_MODEL_NAME);
-    assertEquals(result, testModel);
-    await deleteConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME);
+    await loadConfig();
+
+    const testModel = "deepseek-coder";
+    await setCfg("llm.deepseek.model", testModel);
+    assertEquals(cfg("llm.deepseek.model"), testModel);
+
+    const store = await getKv();
+    await store.delete(["config", "llm.deepseek.model"]);
   },
   sanitizeResources: false,
   sanitizeOps: false,
 });
 
 Deno.test({
-  name: "Config: set and get Telegram Bot API key in KV",
+  name: "Config: setCfg and cfg for telegram bot key",
   async fn() {
+    await loadConfig();
+
     const testKey = "test-telegram-key-456";
-    await setTelegramBotApiKey(testKey);
-    const result = await getKvValue(ConfigKey.TELEGRAM_BOT_API_KEY);
-    assertEquals(result, testKey);
-    await deleteConfigValue(ConfigKey.TELEGRAM_BOT_API_KEY);
+    await setCfg("telegram.botApiKey", testKey);
+    assertEquals(cfg("telegram.botApiKey"), testKey);
+
+    const store = await getKv();
+    await store.delete(["config", "telegram.botApiKey"]);
   },
   sanitizeResources: false,
   sanitizeOps: false,
 });
 
 Deno.test({
-  name: "Config: generic set and get config value in KV",
+  name: "Config: defaults are loaded",
   async fn() {
-    const testKey = "generic-test-key";
-    await setConfigValue(ConfigKey.DEEPSEEK_API_KEY, testKey);
-    const result = await getKvValue(ConfigKey.DEEPSEEK_API_KEY);
-    assertEquals(result, testKey);
-    await deleteConfigValue(ConfigKey.DEEPSEEK_API_KEY);
-  },
-  sanitizeResources: false,
-  sanitizeOps: false,
-});
+    await loadConfig();
 
-Deno.test({
-  name: "Config: set all config values in KV",
-  async fn() {
-    const deepseekKey = "all-test-deepseek";
-    const deepseekModel = "deepseek-coder";
-    const telegramKey = "all-test-telegram";
-
-    await setDeepSeekApiKey(deepseekKey);
-    await setDeepSeekModelName(deepseekModel);
-    await setTelegramBotApiKey(telegramKey);
-
-    assertEquals(await getKvValue(ConfigKey.DEEPSEEK_API_KEY), deepseekKey);
-    assertEquals(
-      await getKvValue(ConfigKey.DEEPSEEK_MODEL_NAME),
-      deepseekModel,
-    );
-    assertEquals(await getKvValue(ConfigKey.TELEGRAM_BOT_API_KEY), telegramKey);
-
-    await deleteConfigValue(ConfigKey.DEEPSEEK_API_KEY);
-    await deleteConfigValue(ConfigKey.DEEPSEEK_MODEL_NAME);
-    await deleteConfigValue(ConfigKey.TELEGRAM_BOT_API_KEY);
-  },
-  sanitizeResources: false,
-  sanitizeOps: false,
-});
-
-Deno.test({
-  name: "Config: return null for non-existent key in KV",
-  async fn() {
-    await deleteConfigValue(ConfigKey.DEEPSEEK_API_KEY);
-    const result = await getKvValue(ConfigKey.DEEPSEEK_API_KEY);
-    assertEquals(result, null);
-  },
-  sanitizeResources: false,
-  sanitizeOps: false,
-});
-
-Deno.test({
-  name: "Config: cleanup - close KV connection",
-  fn() {
-    closeKv();
+    // agent.profile defaults to "smith"
+    const profile = cfg("agent.profile");
+    // It's either "smith" (default) or whatever was set in KV/env
+    assertEquals(typeof profile, "string");
   },
   sanitizeResources: false,
   sanitizeOps: false,

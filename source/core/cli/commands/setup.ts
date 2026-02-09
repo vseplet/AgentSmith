@@ -1,18 +1,8 @@
 import { Confirm, Input, Secret, Select } from "@cliffy/prompt";
 import { getProfileNames } from "$/profiles";
 import { getProviderNames, getProviderSetupFields } from "$/core/llms/mod.ts";
-import {
-  getAgentProfile,
-  getConfigValue,
-  getLLMProvider,
-  getTelegramBotApiKey,
-  getTelegramCode,
-  setAgentProfile,
-  setConfigValue,
-  setLLMProvider,
-  setTelegramBotApiKey,
-  setTelegramCode,
-} from "$/core/config.ts";
+import { cfg, setCfg } from "$/core/config.ts";
+import type { ConfigPath } from "$/core/config.ts";
 
 function maskSecret(value: string | null): string {
   if (!value) return "(not set)";
@@ -35,7 +25,7 @@ async function keepExisting(
 export async function setupProfile(): Promise<void> {
   console.log("\n--- Profile Setup ---\n");
 
-  const current = await getAgentProfile();
+  const current = cfg("agent.profile");
   if (current && (await keepExisting("Agent profile", current, false))) {
     console.log("Profile unchanged.");
     return;
@@ -46,14 +36,14 @@ export async function setupProfile(): Promise<void> {
     options: getProfileNames(),
   });
 
-  await setAgentProfile(agentProfile);
+  await setCfg("agent.profile", agentProfile);
   console.log("Profile saved.");
 }
 
 export async function setupTelegram(): Promise<void> {
   console.log("\n--- Telegram Setup ---\n");
 
-  const currentKey = await getTelegramBotApiKey();
+  const currentKey = cfg("telegram.botApiKey");
   let telegramBotApiKey: string;
   if (currentKey && (await keepExisting("Bot API Key", currentKey, true))) {
     telegramBotApiKey = currentKey;
@@ -63,7 +53,7 @@ export async function setupTelegram(): Promise<void> {
     });
   }
 
-  const currentCode = await getTelegramCode();
+  const currentCode = cfg("telegram.code");
   let telegramCode: string;
   if (
     currentCode &&
@@ -74,15 +64,15 @@ export async function setupTelegram(): Promise<void> {
     telegramCode = await Input.prompt({ message: "Owner authorization code" });
   }
 
-  await setTelegramBotApiKey(telegramBotApiKey);
-  await setTelegramCode(telegramCode);
+  await setCfg("telegram.botApiKey", telegramBotApiKey);
+  await setCfg("telegram.code", telegramCode);
   console.log("Telegram configuration saved.");
 }
 
 export async function setupLLM(): Promise<void> {
   console.log("\n--- LLM Setup ---\n");
 
-  const currentProvider = await getLLMProvider();
+  const currentProvider = cfg("llm.provider");
   let providerName: string;
   if (
     currentProvider &&
@@ -100,7 +90,7 @@ export async function setupLLM(): Promise<void> {
   const values: Record<string, string> = {};
 
   for (const field of fields) {
-    const current = await getConfigValue(field.key);
+    const current = cfg(field.key as ConfigPath);
 
     if (current && (await keepExisting(field.label, current, field.secret))) {
       values[field.key] = current;
@@ -142,9 +132,9 @@ export async function setupLLM(): Promise<void> {
     }
   }
 
-  await setLLMProvider(providerName);
+  await setCfg("llm.provider", providerName);
   for (const field of fields) {
-    await setConfigValue(field.key, values[field.key]);
+    await setCfg(field.key as ConfigPath, values[field.key]);
   }
 
   console.log("LLM configuration saved.");

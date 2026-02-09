@@ -1,12 +1,12 @@
-import { getAllConfig, ConfigKey } from "$/core/config.ts";
+import { allConfig } from "$/core/config.ts";
 
 const SECRET_KEYS: Set<string> = new Set([
-  ConfigKey.TELEGRAM_BOT_API_KEY,
-  ConfigKey.DEEPSEEK_API_KEY,
-  ConfigKey.OPENAI_API_KEY,
-  ConfigKey.ANTHROPIC_API_KEY,
-  ConfigKey.CHATGPT_REFRESH_TOKEN,
-  ConfigKey.MOLTBOOK_API_KEY,
+  "telegram.botApiKey",
+  "llm.deepseek.apiKey",
+  "llm.openai.apiKey",
+  "llm.anthropic.apiKey",
+  "llm.chatgpt.refreshToken",
+  "moltbook.apiKey",
 ]);
 
 function maskSecret(value: string | null): string {
@@ -16,10 +16,10 @@ function maskSecret(value: string | null): string {
 }
 
 export async function showConfig(): Promise<void> {
-  const config = await getAllConfig();
+  const config = allConfig();
   console.log("\n--- Current Configuration ---");
   for (const [key, value] of Object.entries(config)) {
-    const display = SECRET_KEYS.has(key as typeof ConfigKey[keyof typeof ConfigKey])
+    const display = SECRET_KEYS.has(key)
       ? maskSecret(value)
       : (value ?? "(not set)");
     console.log(`  ${key}: ${display}`);
