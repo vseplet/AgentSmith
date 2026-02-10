@@ -12,6 +12,13 @@ export { requestApproval } from "./approval.ts";
 
 let bot: Bot | null = null;
 
+function isOwner(userId: string | undefined): boolean {
+  if (!userId) return false;
+  const raw = cfg("telegram.userId");
+  if (!raw) return false;
+  return raw.split(",").includes(userId);
+}
+
 const MAX_MESSAGE_LENGTH = 4000; // Telegram limit is 4096, leaving some margin
 
 function truncateMessage(text: string): string {
@@ -149,8 +156,15 @@ export async function startBot(): Promise<void> {
     if (inputCode === storedCode) {
       const userId = ctx.from?.id.toString();
       if (userId) {
-        await setCfg("telegram.userId", userId);
-        ctx.reply("You are now registered as the owner.", replyOptions(ctx));
+        const raw = cfg("telegram.userId");
+        const ids = raw ? raw.split(",").filter(Boolean) : [];
+        if (ids.includes(userId)) {
+          ctx.reply("You are already registered.", replyOptions(ctx));
+          return;
+        }
+        ids.push(userId);
+        await setCfg("telegram.userId", ids.join(","));
+        ctx.reply("You are now registered as an authorized user.", replyOptions(ctx));
       }
     } else {
       ctx.reply("Invalid code.", replyOptions(ctx));
@@ -158,14 +172,8 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("config", async (ctx) => {
-    const ownerId = cfg("telegram.userId");
-    const userId = ctx.from?.id.toString();
-
-    if (!ownerId || userId !== ownerId) {
-      ctx.reply(
-        "Access denied. Only owner can view config.",
-        replyOptions(ctx),
-      );
+    if (!isOwner(ctx.from?.id.toString())) {
+      ctx.reply("Access denied.", replyOptions(ctx));
       return;
     }
 
@@ -188,10 +196,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("clear", async (ctx) => {
-    const ownerId = cfg("telegram.userId");
-    const userId = ctx.from?.id.toString();
-
-    if (!ownerId || userId !== ownerId) {
+    if (!isOwner(ctx.from?.id.toString())) {
       ctx.reply("Access denied.", replyOptions(ctx));
       return;
     }
@@ -201,10 +206,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("context", async (ctx) => {
-    const ownerId = cfg("telegram.userId");
-    const userId = ctx.from?.id.toString();
-
-    if (!ownerId || userId !== ownerId) {
+    if (!isOwner(ctx.from?.id.toString())) {
       ctx.reply("Access denied.", replyOptions(ctx));
       return;
     }
@@ -232,10 +234,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("contacts", async (ctx) => {
-    const ownerId = cfg("telegram.userId");
-    const userId = ctx.from?.id.toString();
-
-    if (!ownerId || userId !== ownerId) {
+    if (!isOwner(ctx.from?.id.toString())) {
       ctx.reply("Access denied.", replyOptions(ctx));
       return;
     }
@@ -255,10 +254,7 @@ export async function startBot(): Promise<void> {
   });
 
   bot.command("groups", async (ctx) => {
-    const ownerId = cfg("telegram.userId");
-    const userId = ctx.from?.id.toString();
-
-    if (!ownerId || userId !== ownerId) {
+    if (!isOwner(ctx.from?.id.toString())) {
       ctx.reply("Access denied.", replyOptions(ctx));
       return;
     }
@@ -301,11 +297,8 @@ export async function startBot(): Promise<void> {
       });
     }
 
-    // Check owner access
-    const ownerId = cfg("telegram.userId");
-    const userId = ctx.from?.id.toString();
-
-    if (!ownerId || userId !== ownerId) {
+    // Check authorized user access
+    if (!isOwner(ctx.from?.id.toString())) {
       ctx.reply("Access denied.", replyOptions(ctx));
       return;
     }
