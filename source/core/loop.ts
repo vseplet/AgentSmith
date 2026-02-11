@@ -5,6 +5,7 @@ import { complete, resolveProvider, summarize } from "$/core/llms/mod.ts";
 import { buildContext } from "./context.ts";
 import { addToMemory, summarizeMemory } from "$/core/memory.ts";
 import { dump } from "$/core/dump.ts";
+import { cfg } from "$/core/config.ts";
 import { log } from "$/core/logger.ts";
 import type { ChatResult, ProgressCallback, TokenStats } from "$/core/types.ts";
 
@@ -236,8 +237,10 @@ const handleMessage = task(TelegramMessage)
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       const { text: response, tokens } = result;
+      const provider = cfg("llm.provider") ?? "unknown";
+      const profile = cfg("agent.profile") ?? "default";
       const tokenStats =
-        `\n\n📊 ${tokens.totalTokens} tok (${tokens.promptTokens}→${tokens.completionTokens}) | ${tokens.steps} steps | ${elapsed}s`;
+        `\n\n📊 ${tokens.totalTokens} tok | ${tokens.steps} steps | ${elapsed}s | ${provider} | ${profile}`;
 
       log.agent.inf(`Done, len: ${response.length}, tokens: ${tokens.totalTokens}`);
       await editMessage(chatId, replyId, response + tokenStats);

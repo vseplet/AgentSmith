@@ -28,8 +28,8 @@ export function getProviderSetupFields(name: string): ProviderSetupField[] {
   return entry.setupFields;
 }
 
-export async function resolveProvider(): Promise<ProviderConfig> {
-  const providerName = cfg("llm.provider") ?? "deepseek";
+export async function resolveProvider(name?: string): Promise<ProviderConfig> {
+  const providerName = name ?? cfg("llm.provider") ?? "deepseek";
   const entry = PROVIDERS[providerName];
   if (!entry) {
     const available = Object.keys(PROVIDERS).join(", ");
