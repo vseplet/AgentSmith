@@ -37,7 +37,7 @@ This is not a black-box SaaS. It's a starting point -- a minimal, readable codeb
 - **Runs anywhere** -- VPS, Raspberry Pi, NAS, Docker. If it runs Deno, it runs Smith
 - **Safe by design** -- dangerous tools (shell, eval, screenshot) require explicit approval via inline buttons. 2-min timeout = auto-deny
 - **Memory** -- remembers conversations, auto-summarizes old context
-- **Owner-only** -- one-time code auth, then only you can talk to your bot
+- **Multi-user** -- share your bot with trusted people via `/code` auth
 
 ## Getting Started
 
@@ -49,27 +49,47 @@ Open [@BotFather](https://t.me/BotFather) in Telegram, create a bot, save the to
 
 Pick any provider: [DeepSeek](https://platform.deepseek.com/), [OpenAI](https://platform.openai.com/), [Anthropic](https://console.anthropic.com/), or use a local model via [Ollama](https://ollama.ai/) / [LMStudio](https://lmstudio.ai/).
 
-### 3. Install and run
+### 3. Install
+
+**Option A -- Quick install (recommended):**
 
 ```bash
-# Clone
+curl -fsSL https://raw.githubusercontent.com/vseplet/AgentSmith/main/scripts/install.sh | sh
+```
+
+This installs Deno (if needed) and the `smith` CLI globally.
+
+**Option B -- From source:**
+
+```bash
 git clone https://github.com/vseplet/AgentSmith.git
 cd AgentSmith
-
-# Interactive setup -- guides you through everything
-deno task cli setup
-
-# Or configure manually
-cp .env.example .env
-# edit .env with your keys
-
-# Run
 deno task dev
 ```
 
-### 4. Claim your bot
+### 4. First-time setup
 
-Send `/code <your_code>` to your bot in Telegram (the code you set during setup). Done -- you're the owner.
+```bash
+smith setup
+```
+
+The interactive wizard will ask for:
+- **Agent profile** -- personality preset (`smith` or `default`)
+- **Telegram Bot API Key** -- the token from BotFather
+- **Authorization code** -- a secret code for `/code` auth (you choose it)
+- **LLM provider** -- pick a provider and enter the API key / model
+
+### 5. Run
+
+```bash
+smith run
+```
+
+The bot starts and listens for messages. Logs appear in the terminal.
+
+### 6. Authorize users
+
+Send `/code <your_code>` to your bot in Telegram (the code you set during setup). Each person who sends the correct code gets added as an authorized user. Each user gets their own conversation context in DMs.
 
 ### Docker
 
@@ -124,7 +144,7 @@ Tools marked as `dangerous` require your approval via inline buttons before exec
 
 | Command | Description |
 |---|---|
-| `/code <code>` | Claim ownership |
+| `/code <code>` | Authorize as a user |
 | `/config` | View configuration (masked secrets) |
 | `/clear` | Clear conversation memory |
 | `/context` | Show current context (summary + recent messages) |
@@ -198,7 +218,7 @@ Priority: ENV > Deno KV > defaults.
 | `OLLAMA_BASE_URL` | Ollama API URL | `http://localhost:11434/v1` |
 | `OLLAMA_MODEL_NAME` | Ollama model | -- |
 | `TELEGRAM_BOT_API_KEY` | Telegram bot token | -- |
-| `TELEGRAM_USER_ID` | Owner's Telegram ID | -- |
+| `TELEGRAM_USER_ID` | Authorized user IDs (comma-separated) | -- |
 | `TELEGRAM_CODE` | Authorization code | -- |
 | `MOLTBOOK_API_KEY` | Moltbook API key | -- |
 
