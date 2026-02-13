@@ -1,6 +1,8 @@
 import type { Tool } from "$/core/types.ts";
 import { getAllContacts, getAllGroups } from "$/core/telegram/contacts.ts";
 import { sendReply } from "$/core/telegram/mod.ts";
+import { addToMemory } from "$/core/memory.ts";
+import { cfg } from "$/core/config.ts";
 
 export const telegramContactsTool: Tool = {
   name: "telegram_contacts",
@@ -96,12 +98,19 @@ export const telegramSendTool: Tool = {
       // We need to use the bot directly for sending without reply
       const { sendMessage } = await import("$/core/telegram/mod.ts");
       const messageId = await sendMessage(chatId, text);
-      
+
+      // Add to recipient's context if they are an authorized user
+      const authorizedIds = (cfg("telegram.userId") ?? "").split(",").filter(Boolean);
+      if (authorizedIds.includes(chatId.toString())) {
+        await addToMemory(chatId, "assistant", text);
+      }
+
       return {
         success: true,
         chatId,
         messageId,
         textLength: text.length,
+        addedToContext: authorizedIds.includes(chatId.toString()),
       };
     } catch (error) {
       return {
