@@ -13,6 +13,28 @@ import type { ChatResult, ProgressCallback, TokenStats } from "$/core/types.ts";
 // Agent Loop
 // ============================================
 
+const THINKING_PHRASES = [
+  "🧠 Думаю...",
+  "🔮 Колдую...",
+  "🌀 Медитирую...",
+  "🧪 Варю...",
+  "🎲 Гадаю...",
+  "☕ Завариваю...",
+  "🛸 Сканирую...",
+  "🧮 Считаю...",
+  "🪐 Созерцаю...",
+  "🐌 Тороплюсь...",
+  "🐙 Щупаю...",
+  "🎰 Кручу...",
+  "🪄 Шаманю...",
+  "🧩 Собираю...",
+  "🔧 Кумекаю...",
+];
+
+function randomThinking(): string {
+  return THINKING_PHRASES[Math.floor(Math.random() * THINKING_PHRASES.length)];
+}
+
 const MAX_STEPS = 10;
 
 function shortResult(result: unknown): string {
@@ -225,7 +247,7 @@ const handleMessage = task(TelegramMessage)
     try {
       log.agent.inf(`Processing: "${text.slice(0, 50)}..."`);
 
-      const replyId = await sendReply(chatId, "⏳ Thinking...", messageId);
+      const replyId = await sendReply(chatId, randomThinking(), messageId);
 
       const onProgress = async (status: string) => {
         await editMessage(chatId, replyId, status);
