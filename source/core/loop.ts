@@ -7,6 +7,7 @@ import { addToMemory, summarizeMemory } from "$/core/memory.ts";
 import { dump } from "$/core/dump.ts";
 import { cfg } from "$/core/config.ts";
 import { log } from "$/core/logger.ts";
+import { writeJournalEntry } from "$/core/journal.ts";
 import type { ChatResult, ProgressCallback, TokenStats } from "$/core/types.ts";
 
 // ============================================
@@ -286,6 +287,9 @@ const handleMessage = task(TelegramMessage)
 export async function startAgent(): Promise<void> {
   core.register(handleMessage);
   await core.start();
+
+  Deno.cron("journal", "0 23 * * *", () => writeJournalEntry());
+
   log.agent.inf("Started");
 }
 

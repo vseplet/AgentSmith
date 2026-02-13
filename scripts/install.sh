@@ -8,4 +8,4 @@ else
     echo "Deno is already installed."
 fi
 
-deno install -g -f -r -A --unstable-kv https://raw.githubusercontent.com/vseplet/AgentSmith/refs/heads/main/source/main.ts --import-map=https://raw.githubusercontent.com/vseplet/AgentSmith/refs/heads/main/import-map.json -n smith
+deno install -g -f -r -A --unstable-kv --unstable-cron https://raw.githubusercontent.com/vseplet/AgentSmith/refs/heads/main/source/main.ts --import-map=https://raw.githubusercontent.com/vseplet/AgentSmith/refs/heads/main/import-map.json -n smith

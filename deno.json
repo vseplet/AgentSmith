@@ -1,12 +1,12 @@
 {
   "lock": false,
   "tasks": {
-    "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-write --allow-run --allow-import --unstable-kv ./source/main.ts",
+    "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-write --allow-run --allow-import --unstable-kv --unstable-cron ./source/main.ts",
     "test": "deno test --allow-read --allow-write --allow-net --allow-env --unstable-kv",
     "fmt": "deno fmt",
     "lint": "deno lint",
     "check": "deno check --allow-import source/**/*.ts tests/**/*.ts",
-    "cli": "deno run --allow-net --allow-env --allow-read --allow-write --allow-run --allow-import --unstable-kv ./source/main.ts"
+    "cli": "deno run --allow-net --allow-env --allow-read --allow-write --allow-run --allow-import --unstable-kv --unstable-cron ./source/main.ts"
   },
   "importMap": "./import-map.json"
 }

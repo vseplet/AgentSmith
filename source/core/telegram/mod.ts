@@ -7,6 +7,7 @@ import { replyOptions } from "./helpers.ts";
 import { getAllContacts, getAllGroups, upsertContact, upsertGroup } from "./contacts.ts";
 import type { ReactionEmoji } from "$/core/types.ts";
 import { handleApprovalCallback, registerBot } from "./approval.ts";
+import { writeJournalEntry, getJournalEntry, getRecentJournal } from "$/core/journal.ts";
 
 export { requestApproval } from "./approval.ts";
 
@@ -271,6 +272,61 @@ export async function startBot(): Promise<void> {
     });
 
     ctx.reply(`=== Groups (${groups.length}) ===\n${lines.join("\n")}`, replyOptions(ctx));
+  });
+
+  bot.command("journal", async (ctx) => {
+    if (!isOwner(ctx.from?.id.toString())) {
+      ctx.reply("Access denied.", replyOptions(ctx));
+      return;
+    }
+
+    const arg = ctx.match?.trim();
+
+    if (arg === "write") {
+      ctx.reply("📔 Пишу дневник...", replyOptions(ctx));
+      await writeJournalEntry();
+      return;
+    }
+
+    if (arg === "recent") {
+      const entries = await getRecentJournal(7);
+      if (entries.length === 0) {
+        ctx.reply("Записей пока нет.", replyOptions(ctx));
+        return;
+      }
+      const text = entries
+        .map((e) => `📔 ${e.date}\n${e.entry.text}`)
+        .join("\n\n───\n\n");
+      ctx.reply(text, replyOptions(ctx));
+      return;
+    }
+
+    // Try to read entry for a specific date
+    if (arg && /^\d{4}-\d{2}-\d{2}$/.test(arg)) {
+      const entry = await getJournalEntry(arg);
+      if (!entry) {
+        ctx.reply(`Нет записи за ${arg}.`, replyOptions(ctx));
+        return;
+      }
+      ctx.reply(`📔 ${arg}\n\n${entry.text}`, replyOptions(ctx));
+      return;
+    }
+
+    // Default: show today's entry or help
+    const today = new Date().toISOString().split("T")[0];
+    const entry = await getJournalEntry(today);
+    if (entry) {
+      ctx.reply(`📔 ${today}\n\n${entry.text}`, replyOptions(ctx));
+    } else {
+      ctx.reply(
+        "📔 Дневник\n\n" +
+        "/journal — запись за сегодня\n" +
+        "/journal write — написать сейчас\n" +
+        "/journal recent — последние 7 дней\n" +
+        "/journal YYYY-MM-DD — запись за дату",
+        replyOptions(ctx),
+      );
+    }
   });
 
   bot.on("message:text", async (ctx) => {
