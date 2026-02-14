@@ -1,26 +1,17 @@
-import type { Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
 
-export const webSearchTool: Tool = {
+export const webSearchTool = defineTool({
   name: "web_search",
   description:
     "Search the web using DuckDuckGo. Use this to find current information, news, or answers to questions that require up-to-date data.",
-  parameters: {
-    type: "object",
-    properties: {
-      query: {
-        type: "string",
-        description: "The search query",
-      },
-      limit: {
-        type: "number",
-        description: "Maximum number of results to return. Default: 5",
-      },
-    },
-    required: ["query"],
-  },
+  parameters: v.object({
+    query: v.pipe(v.string(), v.description("The search query")),
+    limit: v.optional(v.pipe(v.number(), v.description("Maximum number of results to return. Default: 5"))),
+  }),
   execute: async (args) => {
-    const query = args.query as string;
-    const limit = (args.limit as number) || 5;
+    const query = args.query;
+    const limit = args.limit ?? 5;
 
     const url = `https://html.duckduckgo.com/html/?q=${
       encodeURIComponent(query)
@@ -39,10 +30,8 @@ export const webSearchTool: Tool = {
 
     const html = await response.text();
 
-    // Parse results from DuckDuckGo HTML
     const results: { title: string; url: string; snippet: string }[] = [];
 
-    // Match result blocks
     const resultRegex =
       /<a[^>]*class="result__a"[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>[\s\S]*?<a[^>]*class="result__snippet"[^>]*>([^<]*)<\/a>/g;
 
@@ -60,7 +49,6 @@ export const webSearchTool: Tool = {
       }
     }
 
-    // Fallback: simpler parsing if regex didn't match
     if (results.length === 0) {
       const linkRegex =
         /<a[^>]*class="result__a"[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/g;
@@ -88,10 +76,9 @@ export const webSearchTool: Tool = {
       count: results.length,
     };
   },
-};
+});
 
 function extractUrl(ddgUrl: string): string {
-  // DuckDuckGo wraps URLs, extract the actual URL
   const match = ddgUrl.match(/uddg=([^&]*)/);
   if (match) {
     return decodeURIComponent(match[1]);

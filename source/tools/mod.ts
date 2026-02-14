@@ -4,7 +4,6 @@ import { systemInfoTool, shellTool } from "./system.ts";
 import { psTool } from "./ps.ts";
 import { claudeTool } from "./claude.ts";
 import { webSearchTool } from "./websearch.ts";
-import { moltbookTool } from "./moltbook.ts";
 import { logSearchTool } from "./logsearch.ts";
 import { evalTool } from "./eval.ts";
 import { cheatShTool, rateSxTool, wttrTool, ifconfigTool } from "./http-services.ts";
@@ -21,7 +20,6 @@ export const TOOLS: Tool[] = [
   psTool,
   claudeTool,
   webSearchTool,
-  moltbookTool,
   logSearchTool,
   evalTool,
   cheatShTool,

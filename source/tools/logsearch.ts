@@ -1,44 +1,30 @@
-import type { Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
 import { getDumpDir, searchDumps } from "$/core/dump.ts";
 
-export const logSearchTool: Tool = {
+export const logSearchTool = defineTool({
   name: "search_history",
   description:
     "Search through conversation history logs. Use this to find previous conversations, remember past context, or search for specific topics discussed before.",
-  parameters: {
-    type: "object",
-    properties: {
-      pattern: {
-        type: "string",
-        description: "Search pattern (regex supported)",
-      },
-      chat_id: {
-        type: "number",
-        description:
-          "Filter by specific chat ID. If not provided, searches all chats.",
-      },
-    },
-    required: ["pattern"],
-  },
+  parameters: v.object({
+    pattern: v.pipe(v.string(), v.description("Search pattern (regex supported)")),
+    chat_id: v.optional(v.pipe(v.number(), v.description("Filter by specific chat ID. If not provided, searches all chats."))),
+  }),
   execute: async (args) => {
-    const pattern = args.pattern as string;
-    const chatId = args.chat_id as number | undefined;
-
-    if (!pattern) {
+    if (!args.pattern) {
       return { error: "pattern is required" };
     }
 
-    const results = await searchDumps(pattern, chatId);
+    const results = await searchDumps(args.pattern, args.chat_id);
 
     if (results.length === 0) {
       return {
         message: "No matches found",
-        pattern,
+        pattern: args.pattern,
         dump_dir: getDumpDir(),
       };
     }
 
-    // Limit results to avoid huge responses
     const limitedResults = results.slice(0, 5).map((r) => ({
       file: r.file,
       matches: r.matches.slice(0, 3),
@@ -46,9 +32,9 @@ export const logSearchTool: Tool = {
     }));
 
     return {
-      pattern,
+      pattern: args.pattern,
       results: limitedResults,
       total_files: results.length,
     };
   },
-};
+});

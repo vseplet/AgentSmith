@@ -1,28 +1,18 @@
-import type { Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
 
-export const evalTool: Tool = {
+export const evalTool = defineTool({
   name: "eval_code",
   description:
     "Execute JavaScript/TypeScript code in a sandboxed Deno environment (no permissions). Use for calculations, data processing, string manipulation, algorithms. Returns the result of the last expression.",
   dangerous: true,
-  parameters: {
-    type: "object",
-    properties: {
-      code: {
-        type: "string",
-        description:
-          "JavaScript/TypeScript code to execute. The result of the last expression is returned.",
-      },
-    },
-    required: ["code"],
-  },
+  parameters: v.object({
+    code: v.pipe(v.string(), v.description("JavaScript/TypeScript code to execute. The result of the last expression is returned.")),
+  }),
   execute: async (args) => {
-    const code = args.code as string;
-
-    // Wrap code to capture the result
     const wrappedCode = `
 const __result = (async () => {
-  ${code}
+  ${args.code}
 })();
 __result.then(r => console.log(JSON.stringify(r ?? null))).catch(e => console.error(e.message));
 `;
@@ -34,7 +24,7 @@ __result.then(r => console.log(JSON.stringify(r ?? null))).catch(e => console.er
     });
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     try {
       const process = command.spawn();
@@ -58,4 +48,4 @@ __result.then(r => console.log(JSON.stringify(r ?? null))).catch(e => console.er
       return { error: e instanceof Error ? e.message : "Execution failed" };
     }
   },
-};
+});

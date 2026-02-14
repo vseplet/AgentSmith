@@ -1,6 +1,7 @@
 {
   "imports": {
     "@valibot/valibot": "jsr:@valibot/valibot@^1.2.0",
+    "@valibot/to-json-schema": "jsr:@valibot/to-json-schema@^1.0.0",
     "@vseplet/fetchify": "jsr:@vseplet/fetchify@^0.4.0",
     "@vseplet/luminous": "jsr:@vseplet/luminous@^2.2.1",
     "grammy": "https://deno.land/x/grammy/mod.ts",

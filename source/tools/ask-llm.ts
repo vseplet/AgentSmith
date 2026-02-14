@@ -1,29 +1,18 @@
-import type { Message, Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
+import type { Message } from "$/core/types.ts";
 import { complete, getProviderNames, resolveProvider } from "$/core/llms/mod.ts";
 
-export const askLlmTool: Tool = {
+export const askLlmTool = defineTool({
   name: "ask_llm",
   description:
     "Send a prompt to any available LLM provider and get a response. Use this to query a different model without switching the main provider, or to compare answers from multiple models.",
-  parameters: {
-    type: "object",
-    properties: {
-      prompt: {
-        type: "string",
-        description: "The prompt to send to the LLM.",
-      },
-      provider: {
-        type: "string",
-        description: "Provider name (deepseek, openai, anthropic, ollama, lmstudio, openai-oauth). If omitted, uses current provider.",
-      },
-      system: {
-        type: "string",
-        description: "Optional system prompt.",
-      },
-    },
-    required: ["prompt"],
-  },
-  execute: async (args: { prompt: string; provider?: string; system?: string }) => {
+  parameters: v.object({
+    prompt: v.pipe(v.string(), v.description("The prompt to send to the LLM.")),
+    provider: v.optional(v.pipe(v.string(), v.description("Provider name (deepseek, openai, anthropic, ollama, lmstudio, openai-oauth). If omitted, uses current provider."))),
+    system: v.optional(v.pipe(v.string(), v.description("Optional system prompt."))),
+  }),
+  execute: async (args) => {
     if (args.provider && !getProviderNames().includes(args.provider)) {
       return { error: `Unknown provider: ${args.provider}`, available: getProviderNames() };
     }
@@ -48,4 +37,4 @@ export const askLlmTool: Tool = {
       return { error: String(error) };
     }
   },
-};
+});

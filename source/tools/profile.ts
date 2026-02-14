@@ -1,25 +1,17 @@
-import type { Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
 import { cfg, setCfg } from "$/core/config.ts";
 import { getProfileNames } from "$/profiles";
 
-export const profileSwitchTool: Tool = {
+export const profileSwitchTool = defineTool({
   name: "switch_profile",
   description:
     "Switch the agent personality profile. Call this when user wants to change personality or switch to a different character.",
-  parameters: {
-    type: "object",
-    properties: {
-      profile: {
-        type: "string",
-        description: "Profile name to switch to.",
-      },
-      list: {
-        type: "boolean",
-        description: "If true, just list available profiles without switching.",
-      },
-    },
-  },
-  execute: async (args: { profile?: string; list?: boolean }) => {
+  parameters: v.object({
+    profile: v.optional(v.pipe(v.string(), v.description("Profile name to switch to."))),
+    list: v.optional(v.pipe(v.boolean(), v.description("If true, just list available profiles without switching."))),
+  }),
+  execute: async (args) => {
     const available = getProfileNames();
 
     if (args.list) {
@@ -38,4 +30,4 @@ export const profileSwitchTool: Tool = {
     await setCfg("agent.profile", args.profile);
     return { switched: args.profile, note: "Profile will take effect on next message" };
   },
-};
+});

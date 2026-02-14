@@ -1,31 +1,19 @@
-import type { Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
 
-export const psTool: Tool = {
+export const psTool = defineTool({
   name: "list_processes",
   description:
     "List running processes. Can filter by name, sort by CPU or memory usage, or show top N processes.",
-  parameters: {
-    type: "object",
-    properties: {
-      filter: {
-        type: "string",
-        description: "Filter processes by name (grep pattern)",
-      },
-      sort_by: {
-        type: "string",
-        enum: ["cpu", "memory", "pid"],
-        description: "Sort by CPU usage, memory usage, or PID. Default: cpu",
-      },
-      limit: {
-        type: "number",
-        description: "Limit number of results. Default: 10",
-      },
-    },
-  },
+  parameters: v.object({
+    filter: v.optional(v.pipe(v.string(), v.description("Filter processes by name (grep pattern)"))),
+    sort_by: v.optional(v.pipe(v.picklist(["cpu", "memory", "pid"]), v.description("Sort by CPU usage, memory usage, or PID. Default: cpu"))),
+    limit: v.optional(v.pipe(v.number(), v.description("Limit number of results. Default: 10"))),
+  }),
   execute: async (args) => {
-    const filter = args.filter as string | undefined;
-    const sortBy = (args.sort_by as string) || "cpu";
-    const limit = (args.limit as number) || 10;
+    const filter = args.filter;
+    const sortBy = args.sort_by ?? "cpu";
+    const limit = args.limit ?? 10;
 
     const command = new Deno.Command("ps", {
       args: ["aux"],
@@ -39,14 +27,12 @@ export const psTool: Tool = {
     const header = lines[0];
     let processes = lines.slice(1);
 
-    // Filter by name if specified
     if (filter) {
       processes = processes.filter((line) =>
         line.toLowerCase().includes(filter.toLowerCase())
       );
     }
 
-    // Sort
     if (sortBy === "cpu") {
       processes.sort((a, b) => {
         const cpuA = parseFloat(a.split(/\s+/)[2]) || 0;
@@ -61,7 +47,6 @@ export const psTool: Tool = {
       });
     }
 
-    // Limit results
     processes = processes.slice(0, limit);
 
     return {
@@ -70,4 +55,4 @@ export const psTool: Tool = {
       total: processes.length,
     };
   },
-};
+});

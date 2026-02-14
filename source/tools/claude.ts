@@ -1,32 +1,23 @@
-import type { Tool } from "$/core/types.ts";
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
 
-export const claudeTool: Tool = {
+export const claudeTool = defineTool({
   name: "ask_claude",
   description:
     "Ask Claude Code CLI a question or give it a task. Returns text response",
-  parameters: {
-    type: "object",
-    properties: {
-      prompt: {
-        type: "string",
-        description: "The question or task for Claude Code",
-      },
-    },
-    required: ["prompt"],
-  },
+  parameters: v.object({
+    prompt: v.pipe(v.string(), v.description("The question or task for Claude Code")),
+  }),
   execute: async (args) => {
-    const prompt = args.prompt as string;
-
     try {
       const command = new Deno.Command("claude", {
-        args: ["-p", prompt],
+        args: ["-p", args.prompt],
         stdout: "piped",
         stderr: "piped",
       });
 
       const process = command.spawn();
 
-      // Таймаут 60 секунд
       const timeout = setTimeout(() => {
         try {
           process.kill();
@@ -51,4 +42,4 @@ export const claudeTool: Tool = {
       return { error: `Failed to run claude: ${String(error)}` };
     }
   },
-};
+});
