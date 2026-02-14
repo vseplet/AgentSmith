@@ -27,17 +27,17 @@ Smith: [approval required: take_screenshot] ✅ Yes / ❌ No
        *sends screenshot of your desktop*
 ```
 
-## Why AgentSmith
+## Why
 
 This is not a black-box SaaS. It's a starting point -- a minimal, readable codebase that you fork and bend to your needs. Want to add a tool? One file, one export. New LLM provider? Implement two functions. Custom personality? Edit a string.
 
-- **~4K lines total** -- no abstractions for the sake of abstractions. Every file does one thing, every file is short enough to fully understand
-- **Designed to be extended** -- adding a tool is ~30 lines, a new LLM provider is ~40 lines, a skill is a trigger + a prompt. The architecture stays out of your way
-- **Any LLM** -- DeepSeek, OpenAI, Claude, Ollama, LMStudio, or ChatGPT Plus via OAuth. Switch with one command, or add your own provider
-- **Runs anywhere** -- VPS, Raspberry Pi, NAS, Docker. If it runs Deno, it runs Smith
-- **Safe by design** -- dangerous tools (shell, eval, screenshot) require explicit approval via inline buttons. 2-min timeout = auto-deny
-- **Memory** -- remembers conversations, auto-summarizes old context
-- **Multi-user** -- share your bot with trusted people via `/code` auth
+- **~4K lines total** no abstractions for the sake of abstractions. Every file does one thing, every file is short enough to fully understand
+- **Designed to be extended** adding a tool is ~30 lines, a new LLM provider is ~40 lines, a skill is a trigger + a prompt. The architecture stays out of your way
+- **Any LLM** DeepSeek, OpenAI, Claude, Ollama, LMStudio, or ChatGPT via OAuth. Switch with one command, or add your own provider
+- **Runs anywhere** VPS, Raspberry Pi, NAS, Docker. If it runs Deno, it runs Smith
+- **Safe by design** dangerous tools (shell, eval, screenshot) require explicit approval via inline buttons. 2-min timeout = auto-deny
+- **Memory** remembers conversations, auto-summarizes old context
+- **Multi-user** share your bot with trusted people via `/code` auth
 
 ## Getting Started
 
@@ -51,21 +51,11 @@ Pick any provider: [DeepSeek](https://platform.deepseek.com/), [OpenAI](https://
 
 ### 3. Install
 
-**Option A -- Quick install (recommended):**
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vseplet/AgentSmith/main/scripts/install.sh | sh
 ```
 
 This installs Deno (if needed) and the `smith` CLI globally.
-
-**Option B -- From source:**
-
-```bash
-git clone https://github.com/vseplet/AgentSmith.git
-cd AgentSmith
-deno task dev
-```
 
 ### 4. First-time setup
 
@@ -82,7 +72,7 @@ The interactive wizard will ask for:
 ### 5. Run
 
 ```bash
-smith run
+smith
 ```
 
 The bot starts and listens for messages. Logs appear in the terminal.
@@ -90,17 +80,6 @@ The bot starts and listens for messages. Logs appear in the terminal.
 ### 6. Authorize users
 
 Send `/code <your_code>` to your bot in Telegram (the code you set during setup). Each person who sends the correct code gets added as an authorized user. Each user gets their own conversation context in DMs.
-
-### Docker
-
-```bash
-cp .env.example .env
-# edit .env
-
-docker compose up -d
-```
-
-Data persists in the `smith-data` volume across container restarts.
 
 ## LLM Providers
 
@@ -151,35 +130,18 @@ Tools marked as `dangerous` require your approval via inline buttons before exec
 | `/contacts` | List known contacts |
 | `/groups` | List known groups |
 
-## Extend It
+### Docker
 
-**Add a tool** -- one file, one export, register in `tools/mod.ts`:
+```bash
+cp .env.example .env
+# edit .env
 
-```ts
-// source/agent/tools/my-tool.ts
-export const myTool: Tool = {
-  name: "my_tool",
-  description: "Does something useful",
-  dangerous: true, // requires owner approval before execution
-  parameters: {
-    type: "object",
-    properties: {
-      query: { type: "string", description: "Input" },
-    },
-    required: ["query"],
-  },
-  execute: async (args) => {
-    // your logic here
-    return { result: "done" };
-  },
-};
+docker compose up -d
 ```
 
-**Add an LLM provider** -- implement `getProviderConfig()` + `setupFields`, register in `llms/mod.ts`. That's it.
+Data persists in the `smith-data` volume across container restarts.
 
-**Change personality** -- edit the profile string in `source/agent/profiles/`.
-
----
+--
 
 ## Development
 
@@ -221,6 +183,34 @@ Priority: ENV > Deno KV > defaults.
 | `TELEGRAM_USER_ID` | Authorized user IDs (comma-separated) | -- |
 | `TELEGRAM_CODE` | Authorization code | -- |
 | `MOLTBOOK_API_KEY` | Moltbook API key | -- |
+
+### Extend It
+
+**Add a tool** -- one file, one export, register in `tools/mod.ts`:
+
+```ts
+// source/agent/tools/my-tool.ts
+export const myTool: Tool = {
+  name: "my_tool",
+  description: "Does something useful",
+  dangerous: true, // requires owner approval before execution
+  parameters: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Input" },
+    },
+    required: ["query"],
+  },
+  execute: async (args) => {
+    // your logic here
+    return { result: "done" };
+  },
+};
+```
+
+**Add an LLM provider** -- implement `getProviderConfig()` + `setupFields`, register in `llms/mod.ts`. That's it.
+
+**Change personality** -- edit the profile string in `source/agent/profiles/`.
 
 ### Architecture
 
@@ -296,3 +286,7 @@ source/
   profiles/              # agent profiles (smith, default)
   skills/                # skills (detected by triggers)
 ```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
