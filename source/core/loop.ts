@@ -288,7 +288,7 @@ export async function startAgent(): Promise<void> {
   core.register(handleMessage);
   await core.start();
 
-  Deno.cron("journal", "0 23 * * *", () => writeJournalEntry());
+  Deno.cron("journal", "0 16 * * *", () => writeJournalEntry());
 
   log.agent.inf("Started");
 }
