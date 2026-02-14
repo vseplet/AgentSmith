@@ -189,23 +189,23 @@ Priority: ENV > Deno KV > defaults.
 **Add a tool** -- one file, one export, register in `tools/mod.ts`:
 
 ```ts
-// source/agent/tools/my-tool.ts
-export const myTool: Tool = {
+// source/tools/my-tool.ts
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
+
+export const myTool = defineTool({
   name: "my_tool",
   description: "Does something useful",
   dangerous: true, // requires owner approval before execution
-  parameters: {
-    type: "object",
-    properties: {
-      query: { type: "string", description: "Input" },
-    },
-    required: ["query"],
-  },
-  execute: async (args) => {
-    // your logic here
+  parameters: v.object({
+    query: v.pipe(v.string(), v.description("Input")),
+  }),
+  execute: async (args, ctx) => {
+    // args.query -- typed and validated by valibot
+    // ctx.chatId, ctx.userId, ctx.messageId -- Telegram context (auto-injected)
     return { result: "done" };
   },
-};
+});
 ```
 
 **Add an LLM provider** -- implement `getProviderConfig()` + `setupFields`, register in `llms/mod.ts`. That's it.

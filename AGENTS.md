@@ -88,17 +88,64 @@ source/
 | @vseplet/shibui   | Workflow engine (Pots, Tasks, Deno KV)        |
 | @vseplet/luminous | Логирование                                   |
 
-## Типы (source/types.ts)
+## Типы (source/core/types.ts)
 
 Все типы вынесены в единый файл:
 
 | Категория | Типы                                          |
 | --------- | --------------------------------------------- |
-| Tool      | `Tool`, `ToolCall`                            |
+| Tool      | `Tool`, `ToolCall`, `ToolContext`              |
 | LLM       | `Message`, `ChatResponse`, `ProgressCallback` |
 | Memory    | `Memory`, `MemoryMessage`                     |
-| Config    | `ConfigKey`, `ConfigKeyType`, `Config`        |
-| Telegram  | `ReactionEmoji`                               |
+| Config    | `ConfigPath`                                  |
+| Telegram  | `ReactionEmoji`, `TelegramContact`, `TelegramGroup` |
+
+### ToolContext
+
+При вызове тула автоматически передаётся контекст Telegram-сообщения:
+
+```typescript
+interface ToolContext {
+  chatId?: number;    // ID чата, из которого пришло сообщение
+  userId?: number;    // ID пользователя, отправившего сообщение
+  messageId?: number; // ID сообщения
+}
+```
+
+## Создание тулов
+
+Тулы создаются через `defineTool` с валидацией параметров через valibot:
+
+```typescript
+// source/tools/my-tool.ts
+import * as v from "@valibot/valibot";
+import { defineTool } from "$/core/define-tool.ts";
+
+export const myTool = defineTool({
+  name: "my_tool",
+  description: "Описание для LLM",
+  dangerous: true, // требует подтверждения от владельца
+  parameters: v.object({
+    query: v.pipe(v.string(), v.description("Входной запрос")),
+  }),
+  execute: async (args, ctx) => {
+    // args -- типизированы и валидированы valibot
+    // ctx.chatId, ctx.userId, ctx.messageId -- контекст Telegram (авто)
+    return { result: "done" };
+  },
+});
+```
+
+Затем зарегистрировать в `source/tools/mod.ts`:
+
+```typescript
+import { myTool } from "./my-tool.ts";
+
+export const TOOLS: Tool[] = [
+  // ...
+  myTool,
+];
+```
 
 ## Алиасы импортов
 
