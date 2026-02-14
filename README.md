@@ -9,7 +9,7 @@
   <a href="https://github.com/vseplet/AgentSmith/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License"></a>
 </p>
 
-# AgentSmith
+# Agent Smith
 
 A hackable AI agent framework for Telegram. ~4K lines of TypeScript, 6 LLM providers, 16 tools, full agent loop with memory -- and every piece of code is small enough to read and modify in minutes. Clone it, make it yours.
 

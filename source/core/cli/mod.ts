@@ -4,7 +4,12 @@ import { join } from "@std/path/join";
 import { loadConfig } from "$/core/config.ts";
 import { run } from "./commands/run.ts";
 import { showConfig } from "./commands/config.ts";
-import { runSetup, setupLLM, setupProfile, setupTelegram } from "./commands/setup.ts";
+import {
+  runSetup,
+  setupLLM,
+  setupProfile,
+  setupTelegram,
+} from "./commands/setup.ts";
 
 async function ensureSmithDirs(): Promise<void> {
   const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? ".";
