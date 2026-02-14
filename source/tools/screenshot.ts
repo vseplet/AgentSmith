@@ -5,12 +5,10 @@ import { cfg } from "$/core/config.ts";
 export const screenshotTool = defineTool({
   name: "take_screenshot",
   description:
-    "Take a screenshot of the host machine's screen and send it to a Telegram chat. If chat_id is not provided, sends to the bot owner.",
+    "Take a screenshot of the host machine's screen and send it to the current Telegram chat.",
   dangerous: true,
-  parameters: v.object({
-    chat_id: v.optional(v.pipe(v.number(), v.description("Telegram chat ID to send the screenshot to. Defaults to bot owner."))),
-  }),
-  execute: async (args) => {
+  parameters: v.object({}),
+  execute: async (_args, ctx) => {
     const tmpPath = `/tmp/smith_screenshot_${Date.now()}.png`;
 
     try {
@@ -25,13 +23,13 @@ export const screenshotTool = defineTool({
         return { error: `Screenshot failed: ${err}` };
       }
 
-      let chatId = args.chat_id;
+      let chatId = ctx.chatId;
       if (!chatId) {
         const ownerId = cfg("telegram.userId");
         if (ownerId) chatId = Number(ownerId);
       }
       if (!chatId) {
-        return { error: "No chat_id provided and no owner configured" };
+        return { error: "No chat_id available: not in a chat context and no owner configured" };
       }
 
       const { sendPhoto } = await import("$/core/telegram/mod.ts");

@@ -2,6 +2,12 @@
 // Tool Types
 // ============================================
 
+export interface ToolContext {
+  chatId?: number;
+  userId?: number;
+  messageId?: number;
+}
+
 export interface Tool {
   name: string;
   description: string;
@@ -11,7 +17,7 @@ export interface Tool {
     properties: Record<string, unknown>;
     required?: string[];
   };
-  execute: (args: Record<string, unknown>) => Promise<unknown>;
+  execute: (args: Record<string, unknown>, ctx: ToolContext) => Promise<unknown>;
 }
 
 export interface ToolCall {

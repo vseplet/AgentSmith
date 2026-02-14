@@ -8,7 +8,7 @@ import { dump } from "$/core/dump.ts";
 import { cfg } from "$/core/config.ts";
 import { log } from "$/core/logger.ts";
 import { writeJournalEntry } from "$/core/journal.ts";
-import type { ChatResult, ProgressCallback, TokenStats } from "$/core/types.ts";
+import type { ChatResult, ProgressCallback, TokenStats, ToolContext } from "$/core/types.ts";
 
 // ============================================
 // Agent Loop
@@ -46,10 +46,11 @@ function shortResult(result: unknown): string {
 async function chat(
   prompt: string,
   maxSteps: number,
-  chatId?: number,
+  toolCtx: ToolContext = {},
   onProgress?: ProgressCallback,
   progressMessageId?: number,
 ): Promise<ChatResult> {
+  const chatId = toolCtx.chatId;
   const provider = await resolveProvider();
   log.agent.inf(`Provider: ${provider.name}, Model: ${provider.model}`);
 
@@ -155,7 +156,7 @@ async function chat(
             }
           }
 
-          const execResult = await tool.execute(args);
+          const execResult = await tool.execute(args, toolCtx);
           const resultStr = JSON.stringify(execResult);
           messages.push({
             role: "tool",
@@ -243,7 +244,7 @@ export const TelegramMessage = pot("TelegramMessage", {
 const handleMessage = task(TelegramMessage)
   .name("HandleTelegramMessage")
   .do(async ({ pots, finish, fail }) => {
-    const { chatId, messageId, text, username } = pots[0].data;
+    const { chatId, userId, messageId, text, username } = pots[0].data;
 
     try {
       log.agent.inf(`Processing: "${text.slice(0, 50)}..."`);
@@ -256,7 +257,7 @@ const handleMessage = task(TelegramMessage)
 
       const userPrompt = username ? `[User: ${username}]\n${text}` : text;
       const startTime = Date.now();
-      const result = await chat(userPrompt, MAX_STEPS, chatId, onProgress, replyId);
+      const result = await chat(userPrompt, MAX_STEPS, { chatId, userId, messageId }, onProgress, replyId);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       const { text: response, tokens } = result;
